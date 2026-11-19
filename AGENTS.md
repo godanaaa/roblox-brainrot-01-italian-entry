@@ -1,32 +1,22 @@
-# Session 11 re-record — landscape, enterable bases, presentation, and event fixes
+# Session 12 — clear base yards and highway ramps
 
-Session 11 reapplies the landscape and base design work on top of the sealed sessions 1–10 baseline. The game remains built from Roblox parts, materials, and colors. Ryan owns Studio playtesting, publishing, and final screenshots.
+Session 12 made two focused placement fixes in `src/server/Services/MapBuilder.luau`.
 
-## Landscape
+## Map fixes
 
-`MapBuilder` adds 16 rounded rolling hills in the outer belts (x = ±1182/±1228; z = 270/470/670/870), 16 palms, 16 garden stones, and 48 wildflowers. Palms occupy x = ±940/±1060 and are filtered against both highway ramp bands. Stones are added only when their horizontal ellipse value against every new hill is greater than 1. The existing roads, districts, zone coordinates, and travel positions remain as before.
+- The forest loop now skips trees whose grid positions fall within any of the eight base yards (plot x ±70, z 840–960). Ten trees were removed: `(-770,880)`, `(-700,880)`, `(-630,880)`, `(-560,880)`, `(-490,880)`, and the same five positions at z=940. The other 70 forest trees remain on their original grid.
+- The four wildflowers at `(-1102,330)`, `(-1102,475)`, `(-1102,620)`, and `(-1102,765)` were shifted to x=−1040. All 48 flowers remain present.
+- Runtime placement diagnostics report skipped yard trees and shifted ramp flowers.
 
-Static geometry audit checked all 7 zone arrivals, all 8 plot centers, 100 market stalls, and 28 zone stalls against the new hill ellipses: 143 points total. The lowest ellipse value was 3.23 at the Sky Islands arrival (the hill boundary is 1). All 16 stones are clear; the minimum nearest-hill value is 11.88. There are 0 palms on either ramp; the closest trunk center is 24 studs beyond the ramp edge. The nearest hill surface clears the highway ramp by more than 1.5 studs. Plot, stall, and arrival footprints also remain outside the outer hills.
+## Verification
 
-## Enterable houses and base displays
-
-`BaseService.Rebuild` now builds each house from separate walls and leaves a 9-stud front doorway aligned with an open fence gap and porch. The bright interior has a wood floor, table, bed, transparent rear windows with actual wall openings, and a PointLight. Roof wedges, a chimney, porch, trims, and a per-plot color palette distinguish the eight plots. House scale and trim detail increase with levels 1–6. Existing collect, upgrade, travel, garage, and ownership flows remain wired.
-
-Plots have white picket fencing and glowing rarity-colored circular display pads. The existing Brainrot billboard is reused and updated with rarity, name, and income text to avoid duplicate labels. Existing gameplay display, collection, and income logic remains server-side.
-
-## Events and pricing
-
-`Shop.Buy` applies `GetDiscount()` to non-zone market purchases before calling `Coin.TrySpend`. For example, a $25,000 market Brainrot costs `floor(25000 × .75 + .5) = $18,750` during Brainrot Rain, a 25% reduction. Zone stall multipliers remain unchanged. Market prompts and character price labels refresh when events start and end. Meme Rush now applies 3× income server-side and its event description says “3× passive income burst”; Golden Hour remains 2×. The client event banner is larger and includes a visible countdown progress bar.
-
-## Preserved systems and verification
-
-Startup flow, Play initialization, districts, travel behavior, economy rules, and zone gate amounts are unchanged. The session-6 `script:WaitForChild("Services")` path remains in place. No Studio playtest was run in this environment.
-
+- Static geometry audit: plots 1–8 each have 0 trees inside the yard and 0 in the doorway approach. No remaining wildflower is inside either highway ramp band (x=±1084..±1116, z=−1000..1000).
 - `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded.
-- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice. `out/dossier.json` was byte-identical on both runs (SHA-256 `e8b8ee9d1cb2930fd51f1c10edca1c5d1b446673afeef0eb7abb842ce3d590fd`). `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
-- Fresh level-27 kit check verified 21 files, then its Git probe failed with sandbox `spawnSync git EPERM`. The coordinator reruns this check on the host. The play link remains Ryan's publishing step.
-- The coordinator runs the bundle dry-run on the host with session 11 added; sessions 1–10 passed their dry-runs.
+- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
+- The fresh level-27 kit check verified 21 files, then its Git probe stopped with `spawnSync git EPERM` in this sandbox. The coordinator reruns the check on the host; the play link remains pending Ryan’s publish step.
+- Forest outside the ten yard points, hills, palms, stones, wildflowers outside the four shifted positions, houses, startup, Play, map districts, travel, economy, and zone gate numbers were otherwise untouched.
+- The coordinator runs the bundle dry-run on the host with session 12 added; sessions 1–11 already passed.
 
 ## Final recording plan
 
-After Ryan re-tests and publishes the place, update `PLAY.json` with the published link and capture the final screenshots. Keep those owner-captured artifacts for the coordinator's final bundle dry-run.
+After Ryan re-tests and publishes the place, update `PLAY.json` with the published link and capture the final screenshots. Keep those owner-captured artifacts for the coordinator’s final bundle dry-run.
