@@ -45,9 +45,9 @@ function Shop.RefreshMarketPrices()
   if stand:GetAttribute("ZonePurchase")~=true and stand:GetAttribute("BasePrice") then
    local prompt=stand:FindFirstChild("PurchasePrompt");local id=tonumber(stand.Name:match("Display(%d+)"));local e=id and C.Catalogue[id]
    if prompt and e then
-    local price=marketPrice(e,stand:GetAttribute("PriceMultiplier") or 1);prompt.ActionText="BUY  $"..price
+    local price=marketPrice(e,stand:GetAttribute("PriceMultiplier") or 1);local discount=Events.GetDiscount();prompt.ActionText="BUY  $"..price..(discount>0 and "  • SALE" or "")
     local character=stand:FindFirstChild(e.Name);local gui=character and character:FindFirstChild("WorldLabel",true);local label=gui and gui:FindFirstChildOfClass("TextLabel")
-    if label then label.Text=e.Name.."\n"..e.Rarity.."  $"..price.."  +$"..e.Income.."/s" end
+    if label then label.Text=e.Name.."\n"..e.Rarity..(discount>0 and "  •  "..math.floor(discount*100).."% OFF" or "").."\n$"..price.."  +$"..e.Income.."/s" end
    end
   end
  end

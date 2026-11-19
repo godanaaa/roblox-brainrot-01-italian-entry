@@ -72,9 +72,30 @@ function Map.Build()
  district("zones",function()
  -- village/industrial/luxury landmarks, residential blocks, street lights and colorful signs
  for i,zone in ipairs(C.Zones) do local pos=zone.Position;building(root,zone.Name.."District",pos+Vector3.new(0,0,100),zone.Color,125,65,90,zone.Name:upper()) end
+ -- Each destination gets a different skyline marker, built from simple original Parts.
+ local starter=Vector3.new(145,0,95)
+ local tower=U.Part(root,"StarterClockTower",Vector3.new(18,72,18),starter+Vector3.new(0,36,0),Color3.fromRGB(255,190,65),Enum.Material.Brick)
+ U.Part(root,"ClockTowerCap",Vector3.new(28,10,28),tower.Position+Vector3.new(0,40,0),Color3.fromRGB(235,82,90),Enum.Material.Slate)
+ U.Label(tower,"PIAZZA CLOCKTOWER",Color3.new(1,1,1))
+ local village=Vector3.new(-555,0,560)
+ for _,side in ipairs({-1,1}) do local arch=U.Part(root,"VillageBellArch",Vector3.new(8,48,8),village+Vector3.new(side*24,24,0),Color3.fromRGB(245,222,165),Enum.Material.Brick); U.Part(root,"ArchSpan",Vector3.new(56,8,10),village+Vector3.new(0,46,0),Color3.fromRGB(220,75,67),Enum.Material.Brick); U.Part(root,"ArchFoot",Vector3.new(15,5,16),arch.Position+Vector3.new(0,-20,0),Color3.fromRGB(110,190,110),Enum.Material.Slate) end
+ local neon=Vector3.new(850,0,-285)
+ for i=1,3 do local sign=U.Part(root,"NeonSkylineSign",Vector3.new(5,72-i*12,5),neon+Vector3.new((i-2)*20,36-i*6,0),({Color3.fromRGB(255,65,190),Color3.fromRGB(50,235,255),Color3.fromRGB(185,95,255)})[i],Enum.Material.Neon); U.Part(root,"NeonSignBar",Vector3.new(24,3,2),sign.Position+Vector3.new(0,15,0),sign.Color,Enum.Material.Neon) end
+ U.Label(U.Part(root,"NeonCrown",Vector3.new(4,4,4),neon+Vector3.new(0,68,0),Color3.fromRGB(255,220,75),Enum.Material.Neon),"NEON CROWN",Color3.new(1,1,1))
+ local luxury=Vector3.new(950,0,555)
+ local fountain=U.Part(root,"LuxuryFountainBasin",Vector3.new(62,5,62),luxury+Vector3.new(0,2,0),Color3.fromRGB(60,205,230),Enum.Material.Marble); fountain.Shape=Enum.PartType.Cylinder
+ local fountainCore=U.Part(root,"LuxuryFountainSpire",Vector3.new(12,38,12),luxury+Vector3.new(0,23,0),Color3.fromRGB(255,225,130),Enum.Material.Marble)
+ for i=1,4 do local orb=U.Part(root,"FountainOrb",Vector3.new(10,10,10),fountainCore.Position+Vector3.new(math.cos(i*math.pi/2)*19,10,math.sin(i*math.pi/2)*19),Color3.fromRGB(120,245,255),Enum.Material.Neon); orb.Shape=Enum.PartType.Ball end
+ local sky=Vector3.new(1085,100,900)
+ for i=1,3 do local cloud=U.Part(root,"SkyCloudIsland",Vector3.new(76-i*8,15,60-i*5),sky+Vector3.new((i-2)*72,math.sin(i)*15,(i-2)*45),Color3.fromRGB(235,250,255),Enum.Material.SmoothPlastic); cloud.Shape=Enum.PartType.Ball; U.Part(root,"IslandGrassCap",Vector3.new(64-i*7,6,49-i*4),cloud.Position+Vector3.new(0,9,0),Color3.fromRGB(90,220,155),Enum.Material.Grass) end
+ local secret=Vector3.new(80,0,1125)
+ for i=1,8 do local angle=i*math.pi/4;local pillar=U.Part(root,"RiftPillar",Vector3.new(5,30+(i%3)*7,5),secret+Vector3.new(math.cos(angle)*27,16,math.sin(angle)*27),Color3.fromRGB(180,80,255),Enum.Material.Neon); U.Part(root,"RiftRune",Vector3.new(9,2,2),pillar.Position+Vector3.new(0,7,0),Color3.fromRGB(85,245,255),Enum.Material.Neon) end
+ local portal=U.Part(root,"SecretRiftPortal",Vector3.new(8,48,42),secret+Vector3.new(0,24,0),Color3.fromRGB(220,70,255),Enum.Material.Neon);portal.Shape=Enum.PartType.Cylinder;portal.Orientation=Vector3.new(0,0,90);portal.Transparency=.15;portal.CanCollide=false;U.Label(portal,"RIFT OF THE UNKNOWN",Color3.new(1,1,1))
  -- High contrast endgame districts have clear arrival platforms and visible landmarks.
  local volcano=U.Part(root,"VolcanoRim",Vector3.new(250,14,250),Vector3.new(-1100,5,-800),Color3.fromRGB(49,42,50),Enum.Material.Rock);volcano.Shape=Enum.PartType.Cylinder
  local lava=U.Part(root,"LavaLake",Vector3.new(115,4,115),Vector3.new(-1100,14,-800),Color3.fromRGB(255,70,30),Enum.Material.Neon);lava.Shape=Enum.PartType.Cylinder
+ local peak=U.Part(root,"VolcanoPeak",Vector3.new(128,150,128),Vector3.new(-1100,74,-955),Color3.fromRGB(73,54,57),Enum.Material.Rock);peak.Shape=Enum.PartType.Wedge;peak.Orientation=Vector3.new(0,45,0)
+ local crown=U.Part(root,"LavaPeakCrown",Vector3.new(34,20,34),Vector3.new(-1100,151,-955),Color3.fromRGB(255,91,38),Enum.Material.Neon);crown.Shape=Enum.PartType.Ball;U.Label(crown,"ERUZIONE PEAK",Color3.new(1,1,1))
  for i=1,7 do local x=-1200+(i%3)*85;local z=-890+math.floor(i/3)*75;building(root,"MythicForge"..i,Vector3.new(x,15,z),Color3.fromRGB(170,49,65),36,25,30,"MYTHIC FORGE") end
  for i=1,5 do local pos=Vector3.new(960+(i%2)*115,94,730+math.floor(i/2)*105);local island=U.Part(root,"SkyIsland",Vector3.new(95,10,78),pos,Color3.fromRGB(100,205,145),Enum.Material.Grass);island.Shape=Enum.PartType.Cylinder;U.Part(root,"SkyBridge",Vector3.new(110,5,12),pos+Vector3.new(80,4,30),Color3.fromRGB(245,195,100),Enum.Material.Wood) end
  for i=1,6 do building(root,"DivineSanctum"..i,Vector3.new(-160+(i-1)*64,2,1190),Color3.fromRGB(135,55,190),48,36,42,"DIVINE") end

@@ -103,6 +103,33 @@ function B.Create(parent,entry,pos)
   part(model,"ShoulderCape",Vector3.new(bw*.88,1.5,bd*.72),pos+Vector3.new(0,.95,bd*.6),accent,Enum.Material.Fabric)
   part(model,"CapePin",Vector3.new(.55,.55,.2),pos+Vector3.new(0,1.35,-bd*.57),glow,Enum.Material.Neon,Enum.PartType.Ball)
  end
+ -- A hand-held or orbiting signature prop gives every character a readable hook.
+ local prop=(id-1)%8
+ if prop==0 then
+  local pizza=part(model,"PizzaSlice",Vector3.new(1.8,.35,2),pos+Vector3.new(bw*.72,.7,-.2),Color3.fromRGB(255,190,75),Enum.Material.SmoothPlastic,Enum.PartType.Wedge);pizza.Orientation=Vector3.new(0,0,-18)
+  part(model,"PizzaTopping",Vector3.new(.45,.2,.45),pizza.Position+Vector3.new(0,.22,0),Color3.fromRGB(225,65,70),Enum.Material.SmoothPlastic,Enum.PartType.Ball)
+ elseif prop==1 then
+  local cup=part(model,"EspressoCup",Vector3.new(1.35,1.55,1.25),pos+Vector3.new(bw*.72,.45,-.1),Color3.fromRGB(255,245,220),Enum.Material.SmoothPlastic)
+  part(model,"EspressoCrema",Vector3.new(1.05,.12,.95),cup.Position+Vector3.new(0,.8,0),Color3.fromRGB(115,65,38),Enum.Material.SmoothPlastic,Enum.PartType.Cylinder)
+ elseif prop==2 then
+  local flag=part(model,"MiniFlagPole",Vector3.new(.2,3,.2),pos+Vector3.new(bw*.72,1.1,0),Color3.fromRGB(235,225,195),Enum.Material.Wood)
+  part(model,"MiniFlag",Vector3.new(2,1.25,.18),flag.Position+Vector3.new(1,.65,0),accent,Enum.Material.Fabric)
+ elseif prop==3 then
+  for i=1,3 do local note=part(model,"MusicNote",Vector3.new(.55,.55,.35),pos+Vector3.new(bw*.75+i*.3,.9+i*.65,0),glow,Enum.Material.Neon,Enum.PartType.Ball);note.Shape=Enum.PartType.Ball end
+ elseif prop==4 then
+  local book=part(model,"PocketBook",Vector3.new(1.7,2,.4),pos+Vector3.new(-bw*.72,.5,0),Color3.fromRGB(95,85,175),Enum.Material.Fabric)
+  part(model,"BookStamp",Vector3.new(.65,.65,.16),book.Position+Vector3.new(0,0,-.24),Color3.fromRGB(255,220,90),Enum.Material.Neon,Enum.PartType.Ball)
+ elseif prop==5 then
+  local lantern=part(model,"LuckyLantern",Vector3.new(1.4,1.7,1.4),pos+Vector3.new(bw*.72,.6,0),Color3.fromRGB(255,190,70),Enum.Material.Metal)
+  local lamp=part(model,"LanternGlow",Vector3.new(.8,.9,.8),lantern.Position,Color3.fromRGB(255,245,150),Enum.Material.Neon,Enum.PartType.Ball);lamp.CanCollide=false
+ elseif prop==6 then
+  local orb=part(model,"OrbitOrb",Vector3.new(1.25,1.25,1.25),pos+Vector3.new(0,bh*.7,bd*.82),glow,Enum.Material.Neon,Enum.PartType.Ball)
+  part(model,"OrbitRing",Vector3.new(2.6,.18,2.6),orb.Position,accent,Enum.Material.Neon,Enum.PartType.Cylinder).Orientation=Vector3.new(0,0,90)
+ else
+  local flower=part(model,"DaisyStem",Vector3.new(.22,1.8,.22),pos+Vector3.new(-bw*.72,.75,0),Color3.fromRGB(65,180,95),Enum.Material.Grass)
+  local bloom=part(model,"DaisyBloom",Vector3.new(1.55,1.55,1.55),flower.Position+Vector3.new(0,1,0),Color3.fromRGB(255,225,85),Enum.Material.Neon,Enum.PartType.Ball)
+  for i=1,4 do part(model,"DaisyPetal",Vector3.new(.65,.65,.45),bloom.Position+Vector3.new(math.cos(i*math.pi/2)*.65,math.sin(i*math.pi/2)*.65,0),Color3.fromRGB(255,250,235),Enum.Material.SmoothPlastic,Enum.PartType.Ball) end
+ end
  local label=U.Label(head,entry.Name.."\n"..entry.Rarity.."  $"..entry.Price.."  +$"..entry.Income.."/s",Color3.new(1,1,1))
  label.StudsOffset=Vector3.new(0,headSize.Y*.5+2.5,0)
  local startPivot=model:GetPivot()
