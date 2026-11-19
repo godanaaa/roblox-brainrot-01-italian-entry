@@ -19,10 +19,8 @@ end
 local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
  local stand=Instance.new("Part");stand.Name=name;stand.Size=Vector3.new(14,2,14);stand.Position=position;stand.Anchored=true;stand.Color=C.Rarities[e.Rarity].Color;stand.Material=Enum.Material.Neon;stand.Parent=parent
  local trim=Instance.new("Part");trim.Name="RarityGlow";trim.Size=Vector3.new(14.4,.3,14.4);trim.Position=stand.Position+Vector3.new(0,1.05,0);trim.Anchored=true;trim.CanCollide=false;trim.Color=stand.Color;trim.Material=Enum.Material.Neon;trim.Parent=parent
- B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0))
  local price=math.floor(e.Price*multiplier+.5)
  if not zoneName then price=marketPrice(e,multiplier) end
- if zoneName then U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end
  local actionText=(zoneName and (string.upper(zoneName).." ×"..multiplier.." • ") or "").."BUY  $"..price
  local objectText=e.Name.." • "..e.Rarity.." • +$"..e.Income.."/s"
  if not zoneName and (e.Rarity=="SECRET" or e.Rarity=="DIVINE") then
@@ -34,10 +32,18 @@ local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
    objectText=objectText.." • Requires Base Lv "..requirement.Level.." + Rebirth "..requirement.Rebirths
   end
  end
- local prompt=Instance.new("ProximityPrompt");prompt.Name="PurchasePrompt";prompt.ActionText=actionText;prompt.ObjectText=objectText;prompt.HoldDuration=.4;prompt.MaxActivationDistance=12;prompt.Parent=stand
+ -- The buy prompt is created FIRST, before the brainrot model: a model
+ -- build failure must never eat the prompt (a stall with no prompt cannot
+ -- be bought from at all). E is the buy key; the prompt shows within 16
+ -- studs with a clear line of sight not required.
+ local prompt=Instance.new("ProximityPrompt");prompt.Name="PurchasePrompt";prompt.ActionText=actionText;prompt.ObjectText=objectText;prompt.HoldDuration=.4;prompt.MaxActivationDistance=16;prompt.RequiresLineOfSight=false;prompt.KeyboardKeyCode=Enum.KeyCode.E;prompt.Parent=stand
  stand:SetAttribute("BasePrice",e.Price);stand:SetAttribute("PriceMultiplier",multiplier);stand:SetAttribute("ZonePurchase",zoneName~=nil)
  if zoneName then stand:SetAttribute("ZoneName",zoneName);stand:SetAttribute("BrainrotId",e.Id);stand:SetAttribute("PriceMultiplier",multiplier) end
  prompt.Triggered:Connect(function(p) Shop.Buy(p,e.Id,remotes,zoneName) end)
+ local modelOk,modelErr=pcall(function() B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0)) end)
+ if not modelOk then warn("[IBW] Brainrot model failed for "..e.Name.." (stall "..name.." keeps its buy prompt): "..tostring(modelErr)) end
+ if zoneName then local labelOk,labelErr=pcall(function() U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end);if not labelOk then warn("[IBW] Stall label failed for "..name..": "..tostring(labelErr)) end end
+ return prompt
 end
 function Shop.RefreshMarketPrices()
  local market=workspace:FindFirstChild("BrainrotMarketplace");if not market then return end
@@ -46,15 +52,18 @@ function Shop.RefreshMarketPrices()
    local prompt=stand:FindFirstChild("PurchasePrompt");local id=tonumber(stand.Name:match("Display(%d+)"));local e=id and C.Catalogue[id]
    if prompt and e then
     local price=marketPrice(e,stand:GetAttribute("PriceMultiplier") or 1);local discount=Events.GetDiscount();prompt.ActionText="BUY  $"..price..(discount>0 and "  • SALE" or "")
-    local character=stand:FindFirstChild(e.Name);local gui=character and character:FindFirstChild("WorldLabel",true);local label=gui and gui:FindFirstChildOfClass("TextLabel")
+    -- The brainrot model is parented to the market folder, not the stand.
+    local character=market:FindFirstChild(e.Name);local gui=character and character:FindFirstChild("WorldLabel",true);local label=gui and gui:FindFirstChildOfClass("TextLabel")
     if label then label.Text=e.Name.."\n"..e.Rarity..(discount>0 and "  •  "..math.floor(discount*100).."% OFF" or "").."\n$"..price.."  +$"..e.Income.."/s" end
    end
   end
  end
 end
 function Shop.Init(remotes)
- local market=workspace:FindFirstChild("BrainrotMarketplace");local floor=market and market:FindFirstChild("MarketFloor");if not floor then return end
- for i,e in ipairs(C.Catalogue) do if i<=100 then local x=-125+((i-1)%8)*35;local z=384+math.floor((i-1)/8)*34;addStall(market,e,Vector3.new(x,4,z),"Display"..i,nil,1,remotes) end end
+ local market=workspace:FindFirstChild("BrainrotMarketplace");local floor=market and market:FindFirstChild("MarketFloor");if not floor then warn("[IBW] Shop.Init: no MarketFloor, no stalls built");return end
+ local built,failed=0,0
+ -- One bad stall must never kill the whole market: each addStall is guarded.
+ for i,e in ipairs(C.Catalogue) do if i<=100 then local x=-125+((i-1)%8)*35;local z=384+math.floor((i-1)/8)*34;local ok,err=pcall(function() addStall(market,e,Vector3.new(x,4,z),"Display"..i,nil,1,remotes) end);if ok then built+=1 else failed+=1;warn("[IBW] Market stall "..i.." ("..e.Name..") failed: "..tostring(err)) end end end
  local anchors={Vector3.new(270,0,-130),Vector3.new(-880,0,350),Vector3.new(850,0,-350),Vector3.new(900,0,650),Vector3.new(-900,0,-750),Vector3.new(1075,100,730),Vector3.new(0,0,1080)}
  local folder=Instance.new("Folder");folder.Name="ZoneBrainrotStalls";folder.Parent=workspace
  for zi,zone in ipairs(C.Zones) do
@@ -63,10 +72,12 @@ function Shop.Init(remotes)
   for j=1,4 do
    local entry=choices[math.floor((j-1)*(#choices-1)/3)+1]
    if entry then local dx=({-27,-9,9,27})[j];local centerY=anchors[zi].Y;local pos=Vector3.new(anchors[zi].X+dx,centerY,anchors[zi].Z)
-    addStall(folder,entry,pos,zone.Name:gsub(" ","").."Stall"..j,zone.Name,mult,remotes)
+    local ok,err=pcall(function() addStall(folder,entry,pos,zone.Name:gsub(" ","").."Stall"..j,zone.Name,mult,remotes) end);if ok then built+=1 else failed+=1;warn("[IBW] Zone stall "..zone.Name.." #"..j.." ("..entry.Name..") failed: "..tostring(err)) end
    end
   end
  end
+ local prompts=0;for _,o in ipairs(workspace:GetDescendants()) do if o:IsA("ProximityPrompt") and o.Name=="PurchasePrompt" then prompts+=1 end end
+ warn("[IBW] Shop built: "..built.." stalls ("..failed.." failed), "..prompts.." buy prompts live — cheapest market Brainrot is $"..(C.Catalogue[1] and C.Catalogue[1].Price or "?").." vs $500 starting cash")
 end
 function Shop.Buy(p,id,remotes,zoneName)
  local d=D.Get(p);local e=C.Catalogue[id];if not d then remotes.Notify:FireClient(p,"PURCHASE FAILED • Player data is still loading. Try again shortly.","LOCKED");return false end;if not e or id>100 then warn("[IBW] Rejected invalid marketplace item from "..p.Name..": "..tostring(id));remotes.Notify:FireClient(p,"PURCHASE FAILED • This listing is unavailable.","LOCKED");return false end

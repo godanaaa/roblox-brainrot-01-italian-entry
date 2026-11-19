@@ -21,7 +21,11 @@ function Game.Init(remotes)
   end)
  end
  for _,obj in ipairs(workspace:GetDescendants()) do
-  if obj:IsA("ProximityPrompt") then
+  -- Buy prompts are NOT travel prompts: zone stall stands carry ZoneName,
+  -- so without this guard every zone PurchasePrompt also fired travel
+  -- (pressing E bought the Brainrot AND teleported the player, or showed
+  -- a LOCKED message). Travel pads keep the default "ProximityPrompt" name.
+  if obj:IsA("ProximityPrompt") and obj.Name~="PurchasePrompt" then
    local target=obj.Parent:GetAttribute("ZoneName") or obj.Parent:GetAttribute("TravelTarget")
    if target then connectTravel(obj,target) end
   end
