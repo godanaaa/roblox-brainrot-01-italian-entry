@@ -33,7 +33,7 @@ if Remotes then
     task.wait(8)
     if p.Parent then Remotes.Notify:FireClient(p,"YOUR BRAINROTS EARN MONEY • Collect income at your base pad!","COMMON") end
     task.wait(8)
-    if p.Parent then Remotes.Notify:FireClient(p,"TRAVEL • Press M for the Map — Italian Village is already open!","COMMON") end
+    if p.Parent then Remotes.Notify:FireClient(p,"TRAVEL • Press M for the Map - Italian Village is already open!","COMMON") end
    end
   end)
   return true
