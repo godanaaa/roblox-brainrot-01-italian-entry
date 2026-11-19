@@ -1,26 +1,22 @@
-# Italian Brainrot World — session 7 complete
+# Session 8 completion record — Italian Brainrot World
 
-Sessions 1–6 remain sealed at `89cbe4c`. Session 7 polished the existing playable world without changing the startup path, Play handler, economy, zones, or district structure.
+Sessions 1–7 remain sealed at commit `89ca5fe`. Session 8 preserved the existing startup path, play flow, economy rules, travel gates, and district layout while adding the following changes:
 
-## Session 7 changes
+## Built
 
-- **Marketplace placement:** the eight-column stall grid remains 35×34 studs apart, with all 100 stalls on the floor. Stall rows 1–13 now have z centers 384, 418, 452, 486, 520, 554, 588, 622, 656, 690, 724, 758, and 792. This moves every row four studs forward from its previous center. The floor now spans x −140..140 and z 320..800. The rarity halls moved from z=485 to z=860, clear of every stall and model.
-- **Brainrot variety:** body shape is `shapes[(Id-1)%4+1]`, scale is `0.86 + ((Id*7)%4)*0.06`, body color comes from a five-color palette indexed by Id, and accessory is `accessories[(Id-1)%5+1]`. Eye sizing and spacing, mouth size, and rarity-colored neon trim are deterministic too. Each model is built from small Parts and animated together with a slow spin and bob.
-- **Purchase sound:** successful buys play `rbxasset://sounds/electronicpingshort.wav`, Roblox’s shipped built-in sound, with rarity-based PlaybackSpeed. LEGENDARY and higher purchases get a second pitched layer of the same sound. Creation and playback are pcall-guarded after the purchase succeeds; Debris removes the sounds.
-- **Polish:** labels show name, rarity, price, and income above the model. Stalls have matching neon trim; no per-stall PointLights were added. Base display models were lowered onto their platforms.
+- Brainrots now use an original part-built chibi look: small varied bodies, larger heads, oversized eyes, a mouth, rarity-colored neon trim, and deterministic props selected from catalogue IDs. Props include antennae, crowns, glasses, wings, capes, tires, swords, sneakers, tutus, and shark fins. Existing per-ID palette, body shape, scale, purchase sound, and idle animation remain.
+- Four physical stalls were added in each of the seven zones. The central marketplace remains at catalogue price. Zone prices use strictly increasing multipliers: Starter City ×1, Italian Village ×1.5, Neon City ×2, Luxury District ×3, Volcano ×5, Sky Islands ×8, and Secret Dimension ×12. Each zone displays its name and multiplier on the stall and buy prompt. Zone rarity offers progress from COMMON–RARE in Starter City through SECRET–DIVINE in Secret Dimension.
+- Zone purchases calculate price from the server catalogue and configured multiplier. The server requires the zone to be unlocked, applies the existing SECRET/VOLCANO and DIVINE/SECRET DIMENSION restrictions, checks slots and funds, and records the purchase server-side.
+- The marketplace floor now spans z=320..900 (top y=3), supporting the rarity hall facades whose bases are at y=3 and whose z bounds are 825..895.
 
-## Static placement verification
+## Verification
 
-- Stall centers are x −125, −90, −55, −20, 15, 50, 85, 120 and the 13 z centers listed above. Each 14×2 stand footprint stays within the floor. Model horizontal bounds are under 9×9 studs; the last row’s models end before z=797, inside the floor edge at z=800. The closest residence ends at z=374, while the first stand begins at z=377. Rarity halls begin at z=825, while the last model ends before z=797. No brainrot intersects a building part.
-- Base plots contain up to 25 displays at x offsets −52..53 and z offsets 38, 52, 66, 80. Models are under 9×9 studs inside 12×12 platforms, with 15×14 center spacing. Displays clear the house, roof, sign, collect pad, and garage; no brainrot intersects a building part.
-- `init.server` early lines, the Play handler, and Map.Build district structure are unchanged. Map edits only enlarge/recenter the market floor and move the rarity halls.
+- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` completed successfully.
+- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical. `out/` contains game.rbxl, PLAY.json, src/, screenshots/, and dossier.json.
+- Fresh level-27 kit check verified 21 files. The sandbox Git probe reports `spawnSync git EPERM`; rerun that probe on the coordinator host. PLAY.json remains unpublished, so Ryan completes the play link after publishing.
+- Static geometry audit confirmed four stalls in each zone, non-overlapping stall footprints, clearance from the zone district buildings and existing road grid, and ground/floor contact. Sky Islands stalls fit on the island at x=1027..1122, z=691..769. Hall floor bounds and bases were checked numerically.
+- No Studio playtest or screenshot capture was performed here. Startup, Play routing, and district architecture were not otherwise changed.
 
-## Verification and recording
+## Final recording plan
 
-- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded.
-- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
-- Fresh kit check (`/home/hatch/workspace/roblox-brainrot-01-kit`, level 27) verified 21 files, then stopped at the sandbox git probe (`spawnSync git EPERM`, exit 1). The coordinator should rerun it outside the sandbox; PLAY.json remains for Ryan’s publish step.
-- The coordinator runs the bundle dry-run with session 7’s rollout added; sessions 1–6 passed their dry-runs.
-- After Ryan re-tests, publishes, and captures the final game, update `PLAY.json` and replace the screenshots with those final captures. Keep this repo’s current no-push/no-commit workflow; the coordinator handles the commit.
-
-Files changed in session 7: `AGENTS.md`, `src/server/Services/BaseService.luau`, `src/server/Services/BrainrotService.luau`, `src/server/Services/MapBuilder.luau`, and `src/server/Services/ShopService.luau`.
+After Ryan re-tests and publishes: finalize PLAY.json with the live play link, capture fresh screenshots for the required recording, then have the coordinator include this session's rollout in the bundle dry-run. The coordinator runs that dry-run on the host; sessions 1–7 already passed theirs.
