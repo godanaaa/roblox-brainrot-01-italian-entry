@@ -1,34 +1,26 @@
-# AGENTS.md — Italian Brainrot World, session 6
+# Italian Brainrot World — session 7 complete
 
-## Session 6 fixes
+Sessions 1–6 remain sealed at `89cbe4c`. Session 7 polished the existing playable world without changing the startup path, Play handler, economy, zones, or district structure.
 
-The owner’s Studio Output showed `Services is not a valid member of ServerScriptService` at `Server:12`. Rojo maps `src/server` to the `Server` Script, with `Services` beneath that Script. Updated `src/server/init.server.luau:12` to `script:WaitForChild("Services")`, which resolves the actual child.
+## Session 7 changes
 
-The world self-check in `src/server/Services/MapBuilder.luau:78–79` previously searched for `BrainrotMarketplace` beneath `ItalianBrainrotWorld`, although MapBuilder parents the marketplace directly to Workspace. The check now looks up the market in `workspace` and retains the other required-object checks beneath the world model.
+- **Marketplace placement:** the eight-column stall grid remains 35×34 studs apart, with all 100 stalls on the floor. Stall rows 1–13 now have z centers 384, 418, 452, 486, 520, 554, 588, 622, 656, 690, 724, 758, and 792. This moves every row four studs forward from its previous center. The floor now spans x −140..140 and z 320..800. The rarity halls moved from z=485 to z=860, clear of every stall and model.
+- **Brainrot variety:** body shape is `shapes[(Id-1)%4+1]`, scale is `0.86 + ((Id*7)%4)*0.06`, body color comes from a five-color palette indexed by Id, and accessory is `accessories[(Id-1)%5+1]`. Eye sizing and spacing, mouth size, and rarity-colored neon trim are deterministic too. Each model is built from small Parts and animated together with a slow spin and bob.
+- **Purchase sound:** successful buys play `rbxasset://sounds/electronicpingshort.wav`, Roblox’s shipped built-in sound, with rarity-based PlaybackSpeed. LEGENDARY and higher purchases get a second pitched layer of the same sound. Creation and playback are pcall-guarded after the purchase succeeds; Debris removes the sounds.
+- **Polish:** labels show name, rarity, price, and income above the model. Stalls have matching neon trim; no per-stall PointLights were added. Base display models were lowered onto their platforms.
 
-Remote references in the server bootstrap after Play installation are guarded by `if Remotes then` at line 54. The client controllers now wait for the server-created `ReplicatedStorage.Remotes` folder before accessing it: `InteractionController`, `EffectsController`, and `HUDController`.
+## Static placement verification
 
-## Path audit
+- Stall centers are x −125, −90, −55, −20, 15, 50, 85, 120 and the 13 z centers listed above. Each 14×2 stand footprint stays within the floor. Model horizontal bounds are under 9×9 studs; the last row’s models end before z=797, inside the floor edge at z=800. The closest residence ends at z=374, while the first stand begins at z=377. Rarity halls begin at z=825, while the last model ends before z=797. No brainrot intersects a building part.
+- Base plots contain up to 25 displays at x offsets −52..53 and z offsets 38, 52, 66, 80. Models are under 9×9 studs inside 12×12 platforms, with 15×14 center spacing. Displays clear the house, roof, sign, collect pad, and garage; no brainrot intersects a building part.
+- `init.server` early lines, the Play handler, and Map.Build district structure are unchanged. Map edits only enlarge/recenter the market floor and move the rarity halls.
 
-Audited all `script.Parent`, `script:`, `GetService`, `FindFirstChild`, and `WaitForChild` uses in `src/**/*.luau` against `default.project.json` and the created instance tree.
+## Verification and recording
 
-- `init.server.luau`: `script:WaitForChild("Services")` matches the `Services` child Rojo places beneath the `Server` Script. Its module lookups (`DataService`, `BaseService`, `GameService`, `MapBuilder`, `ShopService`, `CoinService`, `QuestService`, `RebirthService`, `EventService`, `LeaderboardService`, `VehicleService`, and `PremiumService`) are children of that folder.
-- Server service `script.Parent.*` module references resolve to sibling ModuleScripts in `src/server/Services` (`DataService`, `BaseService`, `BrainrotService`, and `CoinService` as used). Shared `Config`, `Util`, and `Remotes` resolve beneath `ReplicatedStorage.Modules` from the project mapping.
-- `ClientMain.client.luau` uses `script.Parent[name]` for sibling client controllers in the `Client` folder. `PlayerGui` waits target the local player’s child. Client remote-folder references now wait for the server-created child of `ReplicatedStorage`.
-- `src/shared/Remotes.luau` creates or reuses `ReplicatedStorage.Remotes`, then creates/reuses the named remote children.
-- World lookups were checked against `MapBuilder`: the world model is in Workspace; `BrainrotMarketplace` is a Workspace sibling of that model; `PremiumShop/Facade` and `Dealership/Facade` are under the world model. The market floor is under the marketplace. Base garage and vehicle seat lookups target children created by their respective builders. GUI and leaderstats lookups target children created by those scripts.
-- All `GetService` targets checked (`Players`, `ReplicatedStorage`, `ContextActionService`, `DataStoreService`, `RunService`, and `Debris`) are Roblox services.
+- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded.
+- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
+- Fresh kit check (`/home/hatch/workspace/roblox-brainrot-01-kit`, level 27) verified 21 files, then stopped at the sandbox git probe (`spawnSync git EPERM`, exit 1). The coordinator should rerun it outside the sandbox; PLAY.json remains for Ryan’s publish step.
+- The coordinator runs the bundle dry-run with session 7’s rollout added; sessions 1–6 passed their dry-runs.
+- After Ryan re-tests, publishes, and captures the final game, update `PLAY.json` and replace the screenshots with those final captures. Keep this repo’s current no-push/no-commit workflow; the coordinator handles the commit.
 
-No other parent-versus-self path error was found. The `Play` handler is installed at line 17 before loading the other services and before `Map.Build` at line 39. The tail remote handlers and the state broadcast loop are inside the `Remotes` guard at lines 54–63.
-
-## Verification completed
-
-- Rojo build: `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded.
-- Ran `MAKEFUN_OUTPUT_DIR=out node main.ts` twice. `out/dossier.json` had the same SHA-256 both times: `8998cb8467632dd9f9f7823c035df144bc344bddd80092ac2737933d30036b34`. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
-- Fresh level-27 kit check verified 21 files. Its only reported issue was the sandbox git probe (`spawnSync git EPERM`); the coordinator must rerun that check where git works. `PLAY.json` remains for the owner’s publish/recording step.
-- Static scan of literal `Vector3.new` dimensions found none above 2048. The four 1300×8×1100 ground tiles, split highway, guarded districts, and earlier text-size limits remain in place.
-- The coordinator runs the bundle dry-run on the host with session 6 added; sessions 1–5 already passed.
-
-## Final recording plan
-
-Ryan should first re-test in Studio and confirm the Server script reaches the `[IBW] Map district` / `WORLD SELF-CHECK PASSED` output without the line-12 error. Ryan then publishes and captures the final screenshots. The final recording session should update `PLAY.json` and screenshots only after that owner-side re-test and capture. Do not commit or push from this sandbox; the coordinator handles the commit.
+Files changed in session 7: `AGENTS.md`, `src/server/Services/BaseService.luau`, `src/server/Services/BrainrotService.luau`, `src/server/Services/MapBuilder.luau`, and `src/server/Services/ShopService.luau`.
