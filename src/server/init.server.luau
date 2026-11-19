@@ -9,7 +9,7 @@ local function safeInit(label,callback)
  return ok
 end
 local Remotes=safeRequire(game.ReplicatedStorage.Modules.Remotes,"Remotes")
-local Services=script.Parent.Services
+local Services=script:WaitForChild("Services")
 local Data=safeRequire(Services.DataService,"DataService") or {Get=function() return nil end,Load=function() return nil end,Save=function() end,Remove=function() end}
 local Base
 -- Install Play before loading other services, building the map, or initializing anything.
@@ -51,6 +51,7 @@ if Premium and Remotes then safeInit("Premium.Init",function() Premium.Init(Remo
 if Events and Remotes then safeInit("Events.Init",function() Events.Init(Remotes) end) end
 if Leaderboard then safeInit("Leaderboard.Init",function() Leaderboard.Init() end) end
 local function state(p) local d=Data.Get(p);if not d then return end;local income=0;local ownedIds={};for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then income+=e.Income;ownedIds[id]=true end end;local discovered=0;for _ in pairs(ownedIds)do discovered+=1 end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;return {Cash=d.Cash,Gems=d.Gems,Level=d.Level,XP=d.XP,Rebirths=d.Rebirths,BaseLevel=d.BaseLevel,Owned=#d.Owned,DiscoveredCount=discovered,OwnedIds=ownedIds,Quests=d.Quests,TotalEarned=d.TotalEarned,Vehicles=d.Vehicles,GemUpgrades=d.GemUpgrades,UnlockedZones=d.UnlockedZones,Income=income*(1+d.Rebirths*.25)*boost} end
+if Remotes then
 Remotes.UpgradeBase.OnServerInvoke=function(p) local d=Data.Get(p);if not d or d.BaseLevel>=6 then return false end;local nextL=d.BaseLevel+1;local cost=Config.Upgrades[nextL].Cost;if d.Cash<cost then return false end;d.Cash-=cost;d.BaseLevel=nextL;local plot=Base.Get(p);if plot then Base.Rebuild(plot,nextL,p) end;return true end
 Remotes.Collect.OnServerInvoke=function(p) local d=Data.Get(p);if not d then return 0 end;local total=0;for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then total+=e.Income end end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;total=math.floor(total*(1+d.Rebirths*.25)*boost);Coin.Add(p,total*5);return total*5 end
 Remotes.Rebirth.OnServerInvoke=Rebirth.Try;Remotes.QuestClaim.OnServerInvoke=Quest.Claim;Remotes.BuyBrainrot.OnServerInvoke=function(p,id)return Shop.Buy(p,id,Remotes)end
@@ -59,3 +60,4 @@ Remotes.Travel.OnServerInvoke=function(p,where) local d=Data.Get(p);if not d the
  game.Players.PlayerRemoving:Connect(function(p)Base.Release(p);Data.Remove(p)end)
  task.spawn(function()while true do task.wait(1);for _,p in ipairs(game.Players:GetPlayers())do local d=Data.Get(p);if d then local income=0;for _,id in ipairs(d.Owned)do local e=Config.Catalogue[id];if e then income+=e.Income end end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;local earned=math.floor(income*(1+d.Rebirths*.25)*boost);Coin.Add(p,earned);if d.GemUpgrades and d.GemUpgrades.AutoCollect then d.AutoCollectTimer=(d.AutoCollectTimer or 0)+1;if d.AutoCollectTimer>=5 then d.AutoCollectTimer=0;Coin.Add(p,earned*5)end end;Remotes.State:FireClient(p,state(p))end end end end)
  game:BindToClose(function()for _,p in ipairs(game.Players:GetPlayers())do Data.Save(p)end end)
+end
