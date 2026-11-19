@@ -1,0 +1,1 @@
+local E={};function E.Init(remotes) local events={"MONEY RAIN! 2X CASH FOR EVERYONE","BRAINROT RAIN! MARKETPLACE BONUS","GOLDEN HOUR! 2X INCOME"};task.spawn(function()while true do task.wait(180);local msg=events[math.random(1,#events)];for _,p in ipairs(game.Players:GetPlayers()) do remotes.Notify:FireClient(p,"🌟 WORLD EVENT: "..msg,"EVENT") end end end) end;return E

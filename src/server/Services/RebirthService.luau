@@ -1,0 +1,1 @@
+local D=require(script.Parent.DataService);local R={};function R.Try(p) local d=D.Get(p);local cost=1000000*(d and (d.Rebirths+1) or 1);if not d or d.Cash<cost then return false end;d.Cash-=cost;d.Rebirths+=1;return true end;return R
