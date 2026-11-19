@@ -194,7 +194,7 @@ function B.Create(parent,entry,pos)
  local palette={Color3.fromRGB(255,115,90),Color3.fromRGB(65,210,220),Color3.fromRGB(255,195,65),Color3.fromRGB(175,110,255),Color3.fromRGB(105,225,130),Color3.fromRGB(220,120,190),Color3.fromRGB(130,170,255),Color3.fromRGB(185,125,70)}
  local bodyColor=palette[(id-1)%#palette+1]
  if signature[entry.Name] then signature[entry.Name](model,pos,bodyColor,glow) else fallback(model,pos,bodyColor,glow,id,entry.Name) end
- local label=U.Label(model.PrimaryPart,entry.Name.."\n"..entry.Rarity.."  $"..entry.Price.."  +$"..entry.Income.."/s",Color3.new(1,1,1));label.StudsOffset=Vector3.new(0,4,0)
+ local label=U.Label(model.PrimaryPart,entry.Name.."\n$"..entry.Price.."  +$"..entry.Income.."/s",Color3.new(1,1,1),150,40,16);label.StudsOffset=Vector3.new(0,4,0)
  local startPivot=model:GetPivot()
  task.spawn(function()
   local began=os.clock()

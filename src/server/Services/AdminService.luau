@@ -104,7 +104,7 @@ function Admin.Init(remotes)
    if cmd=="tp" then
     local zone=findZone(rest)
     if not zone then
-     remotes.Notify:FireClient(p,"ADMIN • Unknown zone — try one of these:","LOCKED")
+     remotes.Notify:FireClient(p,"ADMIN • Unknown zone - try one of these:","LOCKED")
      remotes.Notify:FireClient(p,"ADMIN • Starter, Italian, Neon, Luxury, Volcano, Sky, Secret","COMMON");return
     end
     local character=p.Character
@@ -119,7 +119,7 @@ function Admin.Init(remotes)
     local e=findBrainrot(rest)
     if not e then remotes.Notify:FireClient(p,"ADMIN • No Brainrot matches '"..rest.."'","LOCKED");return end
     local slots=slotsFor(d)
-    if #d.Owned>=slots then remotes.Notify:FireClient(p,"ADMIN • Base is full ("..slots.." slots) — upgrade your base.","LOCKED");return end
+    if #d.Owned>=slots then remotes.Notify:FireClient(p,"ADMIN • Base is full ("..slots.." slots) - upgrade your base.","LOCKED");return end
     table.insert(d.Owned,e.Id);d.Discovered[e.Id]=true
     local plot=Base.Get(p);if plot then Base.Rebuild(plot,d.BaseLevel,p) end
     remotes.Notify:FireClient(p,"ADMIN • Gave you "..e.Name.." • +$"..e.Income.."/s",e.Rarity);return

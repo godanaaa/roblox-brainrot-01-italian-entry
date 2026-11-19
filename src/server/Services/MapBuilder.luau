@@ -102,7 +102,7 @@ function Map.Build()
  U.Label(tower,"PIAZZA CLOCKTOWER",Color3.new(1,1,1))
  local village=Vector3.new(-555,0,560)
  for _,side in ipairs({-1,1}) do local arch=U.Part(root,"VillageBellArch",Vector3.new(8,48,8),village+Vector3.new(side*24,23,0),Color3.fromRGB(245,222,165),Enum.Material.Brick); U.Part(root,"ArchSpan",Vector3.new(56,8,10),village+Vector3.new(0,46,0),Color3.fromRGB(220,75,67),Enum.Material.Brick); U.Part(root,"ArchFoot",Vector3.new(15,5,16),arch.Position+Vector3.new(0,-21.5,0),Color3.fromRGB(110,190,110),Enum.Material.Slate) end
- local neon=Vector3.new(850,0,-285)
+ local neon=Vector3.new(850,0,-180)
  for i=1,3 do local sign=U.Part(root,"NeonSkylineSign",Vector3.new(5,72-i*12,5),neon+Vector3.new((i-2)*20,35-i*6,0),({Color3.fromRGB(255,65,190),Color3.fromRGB(50,235,255),Color3.fromRGB(185,95,255)})[i],Enum.Material.Neon); U.Part(root,"NeonSignBar",Vector3.new(24,3,2),sign.Position+Vector3.new(0,15,0),sign.Color,Enum.Material.Neon) end
  U.Label(U.Part(root,"NeonCrown",Vector3.new(4,4,4),neon+Vector3.new(0,68,0),Color3.fromRGB(255,220,75),Enum.Material.Neon),"NEON CROWN",Color3.new(1,1,1))
  local luxury=Vector3.new(950,0,555)

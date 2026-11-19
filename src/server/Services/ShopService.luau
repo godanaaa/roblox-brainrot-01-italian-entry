@@ -79,7 +79,7 @@ local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
  prompt.Triggered:Connect(function(p) Shop.Buy(p,e.Id,remotes,zoneName) end)
  local modelOk,modelErr=pcall(function() B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0)) end)
  if not modelOk then warn("[IBW] Brainrot model failed for "..e.Name.." (stall "..name.." keeps its buy prompt): "..tostring(modelErr)) end
- if zoneName then local labelOk,labelErr=pcall(function() U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end);if not labelOk then warn("[IBW] Stall label failed for "..name..": "..tostring(labelErr)) end end
+ if zoneName then local labelOk,labelErr=pcall(function() U.Label(stand,e.Name.."\n$"..price,Color3.new(1,1,1),150,40,16) end);if not labelOk then warn("[IBW] Stall label failed for "..name..": "..tostring(labelErr)) end end
  return prompt
 end
 function Shop.RefreshMarketPrices()
@@ -91,7 +91,7 @@ function Shop.RefreshMarketPrices()
     local price=marketPrice(e,stand:GetAttribute("PriceMultiplier") or 1);local discount=Events.GetDiscount();prompt.ActionText="BUY  $"..price..(discount>0 and "  • SALE" or "")
     -- The brainrot model is parented to the market folder, not the stand.
     local character=market:FindFirstChild(e.Name);local gui=character and character:FindFirstChild("WorldLabel",true);local label=gui and gui:FindFirstChildOfClass("TextLabel")
-    if label then label.Text=e.Name.."\n"..e.Rarity..(discount>0 and "  •  "..math.floor(discount*100).."% OFF" or "").."\n$"..price.."  +$"..e.Income.."/s" end
+    if label then label.Text=e.Name.."\n$"..price.."  +$"..e.Income.."/s" end
    end
   end
  end
