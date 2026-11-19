@@ -18,6 +18,6 @@ local E={};local activeNotifies={};function E.Init()
    local fill=Instance.new("Frame");fill.Name="ProgressFill";fill.Size=UDim2.fromScale(1,1);fill.BackgroundColor3=Color3.fromRGB(90,235,150);fill.BorderSizePixel=0;fill.Parent=barBack;Instance.new("UICorner",fill).CornerRadius=UDim.new(1,0)
   end
   local label=gui:FindFirstChild("Banner");local fill=gui:FindFirstChild("ProgressFill",true);local started=workspace:GetServerTimeNow()
-  task.spawn(function()while gui.Parent and workspace:GetServerTimeNow()<endsAt do local now=workspace:GetServerTimeNow();label.Text=string.format("✦  %s  •  %s  •  %ds",name,description,math.max(0,math.ceil(endsAt-now)));if fill then fill.Size=UDim2.new(math.clamp((endsAt-now)/math.max(1,endsAt-started),0,1),0,1,0) end;task.wait(.25)end;if gui.Parent then gui:Destroy() end end)
+  task.spawn(function()while gui.Parent and workspace:GetServerTimeNow()<endsAt do local now=workspace:GetServerTimeNow();label.Text=string.format("%s  •  %s  •  %ds",name,description,math.max(0,math.ceil(endsAt-now)));if fill then fill.Size=UDim2.new(math.clamp((endsAt-now)/math.max(1,endsAt-started),0,1),0,1,0) end;task.wait(.25)end;if gui.Parent then gui:Destroy() end end)
  end)
 end;return E
