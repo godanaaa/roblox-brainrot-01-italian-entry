@@ -1,6 +1,55 @@
-local Remotes=require(game.ReplicatedStorage.Modules.Remotes);local Config=require(game.ReplicatedStorage.Modules.Config)
-local Services=script.Parent.Services;local Map=require(Services.MapBuilder);local Data=require(Services.DataService);local Base=require(Services.BaseService);local Game=require(Services.GameService);local Shop=require(Services.ShopService);local Coin=require(Services.CoinService);local Quest=require(Services.QuestService);local Rebirth=require(Services.RebirthService);local Events=require(Services.EventService);local Leaderboard=require(Services.LeaderboardService);local Vehicle=require(Services.VehicleService);local Premium=require(Services.PremiumService)
-Map.Build();Base.Init();Shop.Init(Remotes);Game.Init(Remotes);Vehicle.Init(Remotes);Premium.Init(Remotes);Events.Init(Remotes);Leaderboard.Init()
+local function safeRequire(moduleScript,label)
+ local ok,value=pcall(require,moduleScript)
+ if not ok then warn("[IBW] require failed for "..label..": "..tostring(value));return nil end
+ return value
+end
+local function safeInit(label,callback)
+ local ok,err=pcall(callback)
+ if not ok then warn("[IBW] "..label.." failed safely: "..tostring(err)) end
+ return ok
+end
+local Remotes=safeRequire(game.ReplicatedStorage.Modules.Remotes,"Remotes")
+local Services=script.Parent.Services
+local Data=safeRequire(Services.DataService,"DataService") or {Get=function() return nil end,Load=function() return nil end,Save=function() end,Remove=function() end}
+local Base
+-- Install Play before loading other services, building the map, or initializing anything.
+if Remotes then
+ Remotes.Play.OnServerInvoke=function(p)
+  local dataOk=pcall(function() if not Data.Get(p) then Data.Load(p) end end)
+  if not dataOk then warn("[IBW] Player data initialization failed during Play") end
+  if Base then pcall(function() if not Base.Get(p) then Base.Claim(p) end end) end
+  if not p.Character then pcall(function() p:LoadCharacter() end) end
+  task.wait(.2)
+  if p.Character then pcall(function() p.Character:PivotTo(CFrame.new(0,8,0)) end) end
+  return true
+ end
+end
+local Config=safeRequire(game.ReplicatedStorage.Modules.Config,"Config") or {Catalogue={},Upgrades={},Zones={}}
+Base=safeRequire(Services.BaseService,"BaseService") or {Init=function() end,Claim=function() end,Get=function() end,Release=function() end}
+local Game=safeRequire(Services.GameService,"GameService")
+local Map=safeRequire(Services.MapBuilder,"MapBuilder")
+local Shop=safeRequire(Services.ShopService,"ShopService")
+local Coin=safeRequire(Services.CoinService,"CoinService") or {Add=function() end}
+local Quest=safeRequire(Services.QuestService,"QuestService")
+local Rebirth=safeRequire(Services.RebirthService,"RebirthService")
+local Events=safeRequire(Services.EventService,"EventService")
+local Leaderboard=safeRequire(Services.LeaderboardService,"LeaderboardService")
+local Vehicle=safeRequire(Services.VehicleService,"VehicleService")
+local Premium=safeRequire(Services.PremiumService,"PremiumService")
+if Map then safeInit("Map.Build",function() Map.Build() end) end
+safeInit("Base.Init",function()
+ Base.Init()
+ for _,p in ipairs(game.Players:GetPlayers()) do
+  if not Data.Get(p) then Data.Load(p) end
+  Base.Claim(p)
+ end
+end)
+if Shop and Remotes then safeInit("Shop.Init",function() Shop.Init(Remotes) end) end
+if Game and Remotes then safeInit("Game.Init",function() Game.Init(Remotes) end) end
+if Vehicle and Remotes then safeInit("Vehicle.Init",function() Vehicle.Init(Remotes) end) end
+if Premium and Remotes then safeInit("Premium.Init",function() Premium.Init(Remotes) end) end
+if Events and Remotes then safeInit("Events.Init",function() Events.Init(Remotes) end) end
+if Leaderboard then safeInit("Leaderboard.Init",function() Leaderboard.Init() end) end
 local function state(p) local d=Data.Get(p);if not d then return end;local income=0;local ownedIds={};for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then income+=e.Income;ownedIds[id]=true end end;local discovered=0;for _ in pairs(ownedIds)do discovered+=1 end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;return {Cash=d.Cash,Gems=d.Gems,Level=d.Level,XP=d.XP,Rebirths=d.Rebirths,BaseLevel=d.BaseLevel,Owned=#d.Owned,DiscoveredCount=discovered,OwnedIds=ownedIds,Quests=d.Quests,TotalEarned=d.TotalEarned,Vehicles=d.Vehicles,GemUpgrades=d.GemUpgrades,UnlockedZones=d.UnlockedZones,Income=income*(1+d.Rebirths*.25)*boost} end
 Remotes.UpgradeBase.OnServerInvoke=function(p) local d=Data.Get(p);if not d or d.BaseLevel>=6 then return false end;local nextL=d.BaseLevel+1;local cost=Config.Upgrades[nextL].Cost;if d.Cash<cost then return false end;d.Cash-=cost;d.BaseLevel=nextL;local plot=Base.Get(p);if plot then Base.Rebuild(plot,nextL,p) end;return true end
 Remotes.Collect.OnServerInvoke=function(p) local d=Data.Get(p);if not d then return 0 end;local total=0;for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then total+=e.Income end end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;total=math.floor(total*(1+d.Rebirths*.25)*boost);Coin.Add(p,total*5);return total*5 end
