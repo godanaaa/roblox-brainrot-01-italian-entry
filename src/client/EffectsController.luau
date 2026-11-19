@@ -1,6 +1,9 @@
-local E={};function E.Init()
+local E={};local activeNotifies={};function E.Init()
  local rem=game:GetService("ReplicatedStorage"):WaitForChild("Remotes");rem.Notify.OnClientEvent:Connect(function(msg,rarity)
-  local p=game.Players.LocalPlayer;local gui=Instance.new("ScreenGui");gui.Name="Celebration";gui.ResetOnSpawn=false;gui.Parent=p:WaitForChild("PlayerGui");local t=Instance.new("TextLabel");t.Size=UDim2.fromOffset(620,80);t.Position=UDim2.new(.5,-310,.2,0);t.BackgroundColor3=Color3.fromRGB(35,28,55);t.Text=msg;t.TextColor3=Color3.fromRGB(255,220,90);t.TextStrokeTransparency=.3;t.Font=Enum.Font.GothamBlack;t.TextScaled=true;local limit=Instance.new("UITextSizeConstraint");limit.MinTextSize=9;limit.MaxTextSize=22;limit.Parent=t;t.Parent=gui;Instance.new("UICorner",t).CornerRadius=UDim.new(0,16);task.delay(3,function()gui:Destroy()end)
+  -- Notifications live at the TOP of the screen, stacked below the event
+  -- banner (banner spans y 82..146), never in the middle: the first sits
+  -- at y=158, each further one 70px lower. Centre-screen stays clear.
+  local p=game.Players.LocalPlayer;local gui=Instance.new("ScreenGui");gui.Name="Celebration";gui.ResetOnSpawn=false;gui.Parent=p:WaitForChild("PlayerGui");local t=Instance.new("TextLabel");t.Size=UDim2.fromOffset(560,64);t.Position=UDim2.new(.5,-280,0,158+#activeNotifies*70);t.BackgroundColor3=Color3.fromRGB(35,28,55);t.Text=msg;t.TextColor3=Color3.fromRGB(255,220,90);t.TextStrokeTransparency=.3;t.Font=Enum.Font.GothamBlack;t.TextScaled=true;local limit=Instance.new("UITextSizeConstraint");limit.MinTextSize=9;limit.MaxTextSize=18;limit.Parent=t;t.Parent=gui;Instance.new("UICorner",t).CornerRadius=UDim.new(0,16);table.insert(activeNotifies,t);task.delay(3,function()local i=table.find(activeNotifies,t);if i then table.remove(activeNotifies,i) end;for j,label in ipairs(activeNotifies) do label.Position=UDim2.new(.5,-280,0,158+(j-1)*70) end;gui:Destroy()end)
   local sound=Instance.new("Sound");sound.SoundId="rbxasset://sounds/electronicpingshort.wav";sound.Volume=.6;sound.Parent=workspace;pcall(function()sound:Play()end);game:GetService("Debris"):AddItem(sound,3)
  end)
  rem.WorldEvent.OnClientEvent:Connect(function(name,description,endsAt)

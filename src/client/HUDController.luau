@@ -2,8 +2,8 @@ local HUD={}
 function HUD.Init()
  local function capText(control,size) local limit=Instance.new("UITextSizeConstraint");limit.MinTextSize=8;limit.MaxTextSize=size;limit.Parent=control end
  local p=game.Players.LocalPlayer;local gui=Instance.new("ScreenGui");gui.Name="WorldHUD";gui.ResetOnSpawn=false;gui.Parent=p:WaitForChild("PlayerGui")
- local bar=Instance.new("Frame");bar.Size=UDim2.fromOffset(570,58);bar.Position=UDim2.fromOffset(18,16);bar.BackgroundColor3=Color3.fromRGB(24,27,45);bar.BackgroundTransparency=.12;bar.Parent=gui;Instance.new("UICorner",bar).CornerRadius=UDim.new(0,14)
- local text=Instance.new("TextLabel");text.Name="Stats";text.Size=UDim2.new(1,-20,1,0);text.Position=UDim2.fromOffset(10,0);text.BackgroundTransparency=1;text.Text="💰 $500     💎 0     ⭐ Lv 1     🔥 0";text.TextColor3=Color3.new(1,1,1);text.Font=Enum.Font.GothamBold;text.TextScaled=true;text.Parent=bar;capText(text,18)
+ local bar=Instance.new("Frame");bar.Size=UDim2.fromOffset(340,46);bar.Position=UDim2.fromOffset(12,12);bar.BackgroundColor3=Color3.fromRGB(24,27,45);bar.BackgroundTransparency=.12;bar.Parent=gui;Instance.new("UICorner",bar).CornerRadius=UDim.new(0,14)
+ local text=Instance.new("TextLabel");text.Name="Stats";text.Size=UDim2.new(1,-20,1,0);text.Position=UDim2.fromOffset(10,0);text.BackgroundTransparency=1;text.Text="💰 $500     💎 0     ⭐ Lv 1     🔥 0";text.TextColor3=Color3.new(1,1,1);text.Font=Enum.Font.GothamBold;text.TextScaled=true;text.Parent=bar;capText(text,14)
  local menu=Instance.new("TextButton");menu.Size=UDim2.fromOffset(128,52);menu.Position=UDim2.new(1,-145,0,18);menu.Text="☰  MENU";menu.Font=Enum.Font.GothamBlack;menu.TextScaled=true;menu.BackgroundColor3=Color3.fromRGB(45,48,78);menu.TextColor3=Color3.new(1,1,1);menu.Parent=gui;capText(menu,17);Instance.new("UICorner",menu).CornerRadius=UDim.new(0,12)
  local rem=game:GetService("ReplicatedStorage"):WaitForChild("Remotes");local state;local mapRows={}
  local function cashText(amount)return tostring(math.floor(amount or 0)):reverse():gsub("(%d%d%d)","%1,"):reverse():gsub("^,","")end
