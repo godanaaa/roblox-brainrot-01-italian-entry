@@ -9,9 +9,46 @@ local Shop={}
 local tiers={1,1.5,2,3,5,8,12}
 local offers={
  {"COMMON","UNCOMMON","RARE"},{"UNCOMMON","RARE","EPIC"},{"RARE","EPIC"},
- {"EPIC","LEGENDARY"},{"LEGENDARY","MYTHIC"},{"MYTHIC","SECRET"},{"SECRET","DIVINE"},
+ {"EPIC","LEGENDARY"},{"LEGENDARY","MYTHIC"},{"MYTHIC","SECRET"},{"MYTHIC","SECRET","DIVINE"},
 }
 local function allowed(rarity,list) for _,v in ipairs(list) do if rarity==v then return true end end return false end
+-- Session 17: pick up to k entries spread across a market's combined offer
+-- bands (all rarities in the offer list), distinct, so a market's set is a
+-- tight curated sample of that zone's offers. If the combined band has
+-- fewer than k entries (the Secret zone only has 10 SECRET+DIVINE in the
+-- whole catalogue), it returns all of them — no duplicates.
+local function pickOffers(rarities,k)
+ local band={};for _,e in ipairs(C.Catalogue) do if e.Id<=100 and allowed(e.Rarity,rarities) then table.insert(band,e) end end
+ local out={};local n=math.min(k,#band)
+ for i=1,n do local idx=math.floor((i-1)*(#band-1)/math.max(1,n-1))+1;table.insert(out,band[idx]) end
+ return out
+end
+-- Session 17: a picket fence rectangle around a zone market, white posts +
+-- two rails, with one entrance gap on the side facing the zone anchor.
+-- baseY is the ground the fence stands on (anchor Y - 1: the stall stands
+-- sit 1 stud into it, so the fence base matches the walking surface).
+local function fenceMarket(parent,cx,baseY,cz,halfW,halfD,gapSide,gapHalf)
+ local function post(x,z) local p=Instance.new("Part");p.Name="MarketFencePost";p.Size=Vector3.new(1,4,1);p.Position=Vector3.new(x,baseY+2,z);p.Anchored=true;p.Color=Color3.fromRGB(245,245,240);p.Material=Enum.Material.SmoothPlastic;p.Parent=parent end
+ local function rail(cx2,cz2,len,angle) local r=Instance.new("Part");r.Name="MarketFenceRail";r.Size=Vector3.new(len,.35,.35);r.Position=Vector3.new(cx2,baseY+2.6,cz2);r.Anchored=true;r.Color=Color3.fromRGB(245,245,240);r.Material=Enum.Material.SmoothPlastic;r.CFrame=CFrame.new(cx2,baseY+2.6,cz2)*CFrame.Angles(0,angle,0);r.Parent=parent end
+ local function side(x1,z1,x2,z2,gapAt,gapHalf2)
+  local dx,dz=x2-x1,z2-z1;local len=math.sqrt(dx*dx+dz*dz);local n=math.max(2,math.floor(len/8))
+  -- Interior posts only (i=1..n-1); the 4 corners are posted once below,
+  -- so no two posts share a spot and z-fight.
+  for i=1,n-1 do local t=i/n;local x=x1+dx*t;local z=z1+dz*t
+   if not gapAt or math.abs((x1==x2 and z or x)-gapAt)>gapHalf2 then post(x,z) end
+  end
+  local function railSeg(ax,az,bx,bz) local mx,my=(ax+bx)/2,(az+bz)/2;local l=math.sqrt((bx-ax)^2+(bz-az)^2);if l>1 then rail(mx,my,l,-math.atan2(bz-az,bx-ax)) end end
+  if gapAt then
+   -- split the rails around the gap
+   if x1==x2 then railSeg(x1,z1,x1,gapAt-gapHalf2);railSeg(x1,gapAt+gapHalf2,x1,z2) else railSeg(x1,z1,gapAt-gapHalf2,z1);railSeg(gapAt+gapHalf2,z1,x2,z2) end
+  else railSeg(x1,z1,x2,z2) end
+ end
+ side(cx-halfW,cz-halfD,cx+halfW,cz-halfD,(gapSide=="S") and cx or nil,gapHalf)
+ side(cx-halfW,cz+halfD,cx+halfW,cz+halfD,(gapSide=="N") and cx or nil,gapHalf)
+ side(cx-halfW,cz-halfD,cx-halfW,cz+halfD,(gapSide=="W") and cz or nil,gapHalf)
+ side(cx+halfW,cz-halfD,cx+halfW,cz+halfD,(gapSide=="E") and cz or nil,gapHalf)
+ post(cx-halfW,cz-halfD);post(cx+halfW,cz-halfD);post(cx-halfW,cz+halfD);post(cx+halfW,cz+halfD)
+end
 local function marketPrice(e,multiplier)
  local base=math.floor(e.Price*multiplier+.5)
  return math.floor(base*(1-Events.GetDiscount())+.5)
@@ -62,19 +99,49 @@ end
 function Shop.Init(remotes)
  local market=workspace:FindFirstChild("BrainrotMarketplace");local floor=market and market:FindFirstChild("MarketFloor");if not floor then warn("[IBW] Shop.Init: no MarketFloor, no stalls built");return end
  local built,failed=0,0
- -- One bad stall must never kill the whole market: each addStall is guarded.
- for i,e in ipairs(C.Catalogue) do if i<=100 then local x=-125+((i-1)%8)*35;local z=384+math.floor((i-1)/8)*34;local ok,err=pcall(function() addStall(market,e,Vector3.new(x,4,z),"Display"..i,nil,1,remotes) end);if ok then built+=1 else failed+=1;warn("[IBW] Market stall "..i.." ("..e.Name..") failed: "..tostring(err)) end end end
+ -- Session 17: the central Bazaar holds ~20 brainrots (its own map's offers:
+ -- COMMON/UNCOMMON/RARE, 7+7+6), NOT the whole 100-entry catalogue. A tight
+ -- curated set in a 4x5 grid, centred on the floor. "Display<id>" naming is
+ -- kept so RefreshMarketPrices can still find the catalogue id. One bad
+ -- stall must never kill the whole market: each addStall is guarded.
+ local marketEntries=pickOffers(offers[1],20)
+ for i,e in ipairs(marketEntries) do
+  local col=(i-1)%4;local row=math.floor((i-1)/4)
+  local x=-30+col*20;local z=540+row*20
+  local ok,err=pcall(function() addStall(market,e,Vector3.new(x,4,z),"Display"..e.Id,nil,1,remotes) end)
+  if ok then built+=1 else failed+=1;warn("[IBW] Market stall "..i.." ("..e.Name..") failed: "..tostring(err)) end
+ end
  local anchors={Vector3.new(270,0,-130),Vector3.new(-880,0,350),Vector3.new(850,0,-350),Vector3.new(900,0,650),Vector3.new(-900,0,-750),Vector3.new(1075,100,730),Vector3.new(0,0,1080)}
+ -- Sky's market centre is shifted 10 studs south of its stall anchor: the
+ -- 4x5 grid's north row would otherwise sit under the Sky travel pad
+ -- (1100,102,780), hiding the brainrot inside the pad.
+ local marketCenters={anchors[1],anchors[2],anchors[3],anchors[4],anchors[5],Vector3.new(1075,100,720),anchors[7]}
  local folder=Instance.new("Folder");folder.Name="ZoneBrainrotStalls";folder.Parent=workspace
  for zi,zone in ipairs(C.Zones) do
-  local mult=tiers[zi];local list=offers[zi];local choices={}
-  for _,e in ipairs(C.Catalogue) do if e.Id<=100 and allowed(e.Rarity,list) then table.insert(choices,e) end end
-  for j=1,4 do
-   local entry=choices[math.floor((j-1)*(#choices-1)/3)+1]
-   if entry then local dx=({-27,-9,9,27})[j];local centerY=anchors[zi].Y;local pos=Vector3.new(anchors[zi].X+dx,centerY,anchors[zi].Z)
-    local ok,err=pcall(function() addStall(folder,entry,pos,zone.Name:gsub(" ","").."Stall"..j,zone.Name,mult,remotes) end);if ok then built+=1 else failed+=1;warn("[IBW] Zone stall "..zone.Name.." #"..j.." ("..entry.Name..") failed: "..tostring(err)) end
-   end
+  local mult=tiers[zi];local list=offers[zi];local center=marketCenters[zi]
+  -- Session 17: EVERY zone gets its own marketplace — ~20 brainrots (that
+  -- zone's rarity offers, spread across the combined offer band), in a 4x5
+  -- grid centred on the zone's market centre, inside a fenced enclosure
+  -- with a sign and one entrance facing the zone anchor. No longer just 4
+  -- stalls standing in the open. The Secret zone's offers include MYTHIC
+  -- (the catalogue only holds 5 SECRET + 5 DIVINE entries, so MYTHIC fills
+  -- its market to 20); Sky holds 19 (all 14 MYTHIC + all 5 SECRET).
+  local entries=pickOffers(list,20)
+  for i,entry in ipairs(entries) do
+   local col=(i-1)%4;local row=math.floor((i-1)/4)
+   local pos=Vector3.new(center.X-30+col*20,center.Y,center.Z-40+row*20)
+   local ok,err=pcall(function() addStall(folder,entry,pos,zone.Name:gsub(" ","").."Stall"..i,zone.Name,mult,remotes) end)
+   if ok then built+=1 else failed+=1;warn("[IBW] Zone stall "..zone.Name.." #"..i.." ("..entry.Name..") failed: "..tostring(err)) end
   end
+  -- Fence the market: white picket fence, one 24-stud entrance on the side
+  -- facing the zone anchor (where the player arrives from).
+  local dx=zone.Position.X-center.X;local dz=zone.Position.Z-center.Z
+  local gapSide=(math.abs(dx)>math.abs(dz)) and (dx<0 and "W" or "E") or (dz<0 and "S" or "N")
+  fenceMarket(folder,center.X,center.Y-1,center.Z,50,60,gapSide,12)
+  local sign=Instance.new("Part");sign.Name=zone.Name.."MarketSign";sign.Size=Vector3.new(22,7,1)
+  if gapSide=="N" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z+62) elseif gapSide=="S" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z-62) elseif gapSide=="E" then sign.Position=Vector3.new(center.X+52,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) else sign.Position=Vector3.new(center.X-52,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) end
+  sign.Anchored=true;sign.Color=zone.Color;sign.Material=Enum.Material.Neon;sign.Parent=folder
+  U.Label(sign,zone.Name:upper().." MARKET  •  "..#entries.." BRAINROTS",Color3.new(1,1,1))
  end
  local prompts=0;for _,o in ipairs(workspace:GetDescendants()) do if o:IsA("ProximityPrompt") and o.Name=="PurchasePrompt" then prompts+=1 end end
  warn("[IBW] Shop built: "..built.." stalls ("..failed.." failed), "..prompts.." buy prompts live — cheapest market Brainrot is $"..(C.Catalogue[1] and C.Catalogue[1].Price or "?").." vs $500 starting cash")

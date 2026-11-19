@@ -15,12 +15,20 @@ local function wedge(m,n,size,p,color,rotation)
  return v
 end
 local function face(m,p,headSize,fur,eyeColor)
+ -- Chibi face (session 17): oversized round eyes with a shine dot and pink
+ -- blush cheeks, like the chibi reference sheet — big expressive eyes are
+ -- the look. Eye size scales with the head, so every character reads chibi.
+ -- The front of the head is at -Z (p.Z - headSize.Z*.51); a smaller z is
+ -- further OUT, so the pupil (front-.2) sits on top of the white (front-.08).
  local front=p.Z-headSize.Z*.51
+ local eyeW=headSize.X*.32;local eyeH=headSize.Y*.38
  for _,side in ipairs({-1,1}) do
-  ball(m,"EyeWhite",Vector3.new(.58,.76,.2),p+Vector3.new(side*.73,.25,front-.08),Color3.new(1,1,1))
-  ball(m,"Pupil",Vector3.new(.25,.42,.12),p+Vector3.new(side*.73,.2,front-.2),eyeColor or Color3.fromRGB(45,38,55),Enum.Material.Neon)
+  ball(m,"EyeWhite",Vector3.new(eyeW,eyeH,.2),p+Vector3.new(side*headSize.X*.21,.28,front-.08),Color3.new(1,1,1))
+  ball(m,"Pupil",Vector3.new(eyeW*.5,eyeH*.55,.12),p+Vector3.new(side*headSize.X*.21,.22,front-.2),eyeColor or Color3.fromRGB(45,38,55),Enum.Material.Neon)
+  ball(m,"EyeShine",Vector3.new(eyeW*.2,eyeH*.2,.06),p+Vector3.new(side*headSize.X*.21-eyeW*.12,.42,front-.28),Color3.new(1,1,1),Enum.Material.Neon)
+  ball(m,"Blush",Vector3.new(eyeW*.42,eyeH*.26,.1),p+Vector3.new(side*headSize.X*.36,-.32,front-.1),Color3.fromRGB(255,150,170),Enum.Material.Neon)
  end
- ball(m,"Nose",Vector3.new(.42,.3,.2),p+Vector3.new(0,-.27,front-.12),fur)
+ ball(m,"Nose",Vector3.new(headSize.X*.13,.3,.2),p+Vector3.new(0,-.27,front-.12),fur)
 end
 local function feet(m,p,color,spread)
  for _,side in ipairs({-1,1}) do
@@ -39,7 +47,7 @@ end
 local function bombardiro(m,p,c,g)
  local body=part(m,"CrocodileBomberBody",Vector3.new(7,2.7,3),p,c);m.PrimaryPart=body
  local snout=part(m,"LongCrocSnout",Vector3.new(3.2,1.25,2.2),p+Vector3.new(0,-.25,-2.25),Color3.fromRGB(95,190,75));ball(m,"Nostril",Vector3.new(.4,.3,.35),snout.Position+Vector3.new(0,.7,-.7),Color3.fromRGB(35,80,40))
- ball(m,"PilotHead",Vector3.new(2.5,2.3,2.3),p+Vector3.new(0,1.1,-.7),Color3.fromRGB(100,200,85));face(m,p+Vector3.new(0,1.1,-.7),Vector3.new(2.5,2.3,2.3),Color3.fromRGB(100,200,85))
+ ball(m,"PilotHead",Vector3.new(3.2,3.0,3.0),p+Vector3.new(0,1.1,-.7),Color3.fromRGB(100,200,85));face(m,p+Vector3.new(0,1.1,-.7),Vector3.new(3.2,3.0,3.0),Color3.fromRGB(100,200,85))
  for _,s in ipairs({-1,1}) do part(m,"BomberWing",Vector3.new(5.2,.45,1.9),p+Vector3.new(s*1.8,.15,.4),Color3.fromRGB(190,205,215),Enum.Material.Metal);for i=1,3 do wedge(m,"CrocodileTooth",Vector3.new(.48,.65,.5),p+Vector3.new(-1.1+i*.55,-.82,-2.65),Color3.new(1,1,1),Vector3.new(0,0,180)) end
   local prop=part(m,"Propeller",Vector3.new(.3,2.8,.28),p+Vector3.new(s*4.2,.35,.55),g,Enum.Material.Metal);prop.Orientation=Vector3.new(0,0,32)
  end
@@ -92,11 +100,11 @@ local function frigo(m,p,c,g)
  local fridge=part(m,"FridgeCamelBody",Vector3.new(3.4,5,3.1),p,Color3.fromRGB(190,232,238),Enum.Material.Metal);m.PrimaryPart=fridge
  part(m,"FridgeDoor",Vector3.new(2.9,4.7,.18),p+Vector3.new(0,0,-1.62),Color3.fromRGB(220,246,248),Enum.Material.Metal);part(m,"FridgeHandle",Vector3.new(.18,1.5,.18),p+Vector3.new(1,-.2,-1.8),g,Enum.Material.Metal)
  for _,s in ipairs({-1,1}) do ball(m,"CamelHump",Vector3.new(1.8,1.9,1.8),p+Vector3.new(s*.95,2.8,.3),Color3.fromRGB(183,125,73));part(m,"CamelLeg",Vector3.new(.6,2,.6),p+Vector3.new(s*1.1,-3.2,.4),Color3.fromRGB(183,125,73)) end
- ball(m,"CamelHead",Vector3.new(2.3,2.2,2.2),p+Vector3.new(0,2.4,-1.5),Color3.fromRGB(195,139,83));face(m,p+Vector3.new(0,2.4,-1.5),Vector3.new(2.3,2.2,2.2),Color3.fromRGB(195,139,83));part(m,"CamelNeck",Vector3.new(1,2.7,1),p+Vector3.new(0,1,-1.1),Color3.fromRGB(195,139,83))
+ ball(m,"CamelHead",Vector3.new(2.9,2.8,2.8),p+Vector3.new(0,2.4,-1.5),Color3.fromRGB(195,139,83));face(m,p+Vector3.new(0,2.4,-1.5),Vector3.new(2.9,2.8,2.8),Color3.fromRGB(195,139,83));part(m,"CamelNeck",Vector3.new(1,2.7,1),p+Vector3.new(0,1,-1.1),Color3.fromRGB(195,139,83))
 end
 local function giraffa(m,p,c,g)
  local body=ball(m,"GiraffeBody",Vector3.new(3.4,3,2.8),p,Color3.fromRGB(255,190,65));m.PrimaryPart=body
- local neck=part(m,"LongGiraffeNeck",Vector3.new(1.6,5.5,1.6),p+Vector3.new(0,3.1,0),Color3.fromRGB(255,190,65));ball(m,"GiraffeHead",Vector3.new(2.5,2,2.2),neck.Position+Vector3.new(0,3,-.1),Color3.fromRGB(255,190,65));face(m,neck.Position+Vector3.new(0,3,-.1),Vector3.new(2.5,2,2.2),Color3.fromRGB(255,190,65))
+ local neck=part(m,"LongGiraffeNeck",Vector3.new(1.6,5.5,1.6),p+Vector3.new(0,3.1,0),Color3.fromRGB(255,190,65));ball(m,"GiraffeHead",Vector3.new(3.0,2.5,2.6),neck.Position+Vector3.new(0,3,-.1),Color3.fromRGB(255,190,65));face(m,neck.Position+Vector3.new(0,3,-.1),Vector3.new(3.0,2.5,2.6),Color3.fromRGB(255,190,65))
  for _,s in ipairs({-1,1}) do part(m,"GiraffeLeg",Vector3.new(.65,2,.65),p+Vector3.new(s*1.05,-2,0),Color3.fromRGB(255,190,65));ball(m,"GiraffeSpot",Vector3.new(.9,.8,.22),p+Vector3.new(s*1.05,.45,-1.35),Color3.fromRGB(155,83,35));part(m,"Ossicone",Vector3.new(.35,1,.35),neck.Position+Vector3.new(s*.75,4,0),Color3.fromRGB(255,190,65)) end
  ball(m,"SpaceHelmet",Vector3.new(3.4,2.8,3),neck.Position+Vector3.new(0,3,.05),Color3.fromRGB(100,220,255),Enum.Material.Glass)
  for i=1,4 do ball(m,"OrbitStar",Vector3.new(.48,.48,.48),p+Vector3.new(math.cos(i*math.pi/2)*3,2+((i%2)*2),math.sin(i*math.pi/2)*3),g,Enum.Material.Neon) end
@@ -114,12 +122,47 @@ local function trippi(m,p,c,g)
  local tail=part(m,"FishTail",Vector3.new(2.7,2.5,.65),p+Vector3.new(0,.1,2.2),Color3.fromRGB(60,190,220),Enum.Material.SmoothPlastic,Enum.PartType.Wedge);tail.Orientation=Vector3.new(0,180,0)
  for i=1,3 do wedge(m,"TailFin",Vector3.new(.6,2,.45),p+Vector3.new((i-2)*.65,.1,3),g,Vector3.new(0,0,(i-2)*16)) end
 end
+-- Session 17: four more signature builders, from the chibi reference sheet —
+-- the coffee cup with a sword, the watermelon with a gorilla face, the bread
+-- loaf, and the shrimp-cat. Same chibi rules: oversized head, big eyes, the
+-- signature item built into the body.
+local function assassino(m,p,c,g)
+ local cup=part(m,"CoffeeCupBody",Vector3.new(3.4,4.2,3.2),p,Color3.fromRGB(60,45,40),Enum.Material.SmoothPlastic,Enum.PartType.Cylinder);m.PrimaryPart=cup
+ part(m,"CupLid",Vector3.new(3.6,.8,3.4),p+Vector3.new(0,2.4,0),Color3.fromRGB(240,235,225),Enum.Material.SmoothPlastic,Enum.PartType.Cylinder)
+ ball(m,"CupFace",Vector3.new(3.0,2.6,2.6),p+Vector3.new(0,.4,-.6),Color3.fromRGB(250,245,235));face(m,p+Vector3.new(0,.4,-.6),Vector3.new(3.0,2.6,2.6),Color3.fromRGB(250,245,235))
+ part(m,"SwordBlade",Vector3.new(.5,4.5,.18),p+Vector3.new(2.6,1.2,0),Color3.fromRGB(220,225,235),Enum.Material.Metal)
+ part(m,"SwordHilt",Vector3.new(1.4,.4,.4),p+Vector3.new(2.6,-1.1,0),Color3.fromRGB(150,100,50),Enum.Material.Wood)
+ part(m,"AssassinArm",Vector3.new(.6,2,.6),p+Vector3.new(2.2,-.5,0),Color3.fromRGB(60,45,40))
+ feet(m,p,Color3.fromRGB(60,45,40),1.1)
+end
+local function watermelon(m,p,c,g)
+ local melon=ball(m,"WatermelonBody",Vector3.new(4.6,4.2,4.4),p,Color3.fromRGB(60,180,80));m.PrimaryPart=melon
+ for _,s in ipairs({-1,1}) do ball(m,"MelonStripe",Vector3.new(.5,3.8,3.6),p+Vector3.new(s*1.6,.1,0),Color3.fromRGB(30,130,50),Enum.Material.Grass) end
+ ball(m,"GorillaFace",Vector3.new(3.2,2.8,2.4),p+Vector3.new(0,.3,-1.2),Color3.fromRGB(120,75,45));face(m,p+Vector3.new(0,.3,-1.2),Vector3.new(3.2,2.8,2.4),Color3.fromRGB(120,75,45))
+ for _,s in ipairs({-1,1}) do ball(m,"GorillaEar",Vector3.new(1,1.1,.7),p+Vector3.new(s*1.7,.9,-1),Color3.fromRGB(120,75,45));part(m,"MelonBoot",Vector3.new(1.3,.9,2),p+Vector3.new(s*1.2,-2.2,-.3),Color3.fromRGB(150,95,50),Enum.Material.SmoothPlastic) end
+end
+local function crostino(m,p,c,g)
+ local loaf=part(m,"BreadLoafBody",Vector3.new(3.6,3.4,2.8),p,Color3.fromRGB(220,165,90),Enum.Material.SmoothPlastic);m.PrimaryPart=loaf
+ ball(m,"CrustTop",Vector3.new(3.4,1.2,2.6),p+Vector3.new(0,1.9,0),Color3.fromRGB(245,205,130))
+ ball(m,"BreadFace",Vector3.new(3.0,2.4,2.2),p+Vector3.new(0,.2,-.9),Color3.fromRGB(250,220,160));face(m,p+Vector3.new(0,.2,-.9),Vector3.new(3.0,2.4,2.2),Color3.fromRGB(250,220,160))
+ for _,s in ipairs({-1,1}) do part(m,"BreadArm",Vector3.new(.6,1.8,.6),p+Vector3.new(s*2,-.3,0),Color3.fromRGB(220,165,90)) end
+ feet(m,p,Color3.fromRGB(220,165,90),1.0)
+end
+local function gamberetta(m,p,c,g)
+ local body=ball(m,"ShrimpBody",Vector3.new(3.6,3.4,3.2),p,Color3.fromRGB(255,140,70));m.PrimaryPart=body
+ for i=1,3 do ball(m,"ShrimpSegment",Vector3.new(3.0-i*.5,2.8-i*.4,2.6-i*.4),p+Vector3.new(0,.3+i*.3,1.2+i*.8),Color3.fromRGB(255,160,90)) end
+ ball(m,"ShrimpHead",Vector3.new(3.2,2.8,2.8),p+Vector3.new(0,.6,-1.2),Color3.fromRGB(255,150,80));face(m,p+Vector3.new(0,.6,-1.2),Vector3.new(3.2,2.8,2.8),Color3.fromRGB(255,150,80))
+ for _,s in ipairs({-1,1}) do ball(m,"CatEar",Vector3.new(.9,1.2,.6),p+Vector3.new(s*1.1,2.2,-1.1),Color3.fromRGB(255,150,80));wedge(m,"TailFan",Vector3.new(1.2,1.8,.4),p+Vector3.new(s*.9,1.8,3.4),Color3.fromRGB(255,120,60),Vector3.new(0,0,s*20)) end
+ for _,s in ipairs({-1,1}) do part(m,"ShrimpLeg",Vector3.new(.5,1.2,.5),p+Vector3.new(s*1.1,-1.9,0),Color3.fromRGB(255,140,70)) end
+end
 
 local signature={
  ["Tralalero Tralala"]=shark,["Bombardiro Crocodilo"]=bombardiro,["Tung Tung Tung Sahur"]=tung,
  ["Ballerina Cappuccina"]=cappuccina,["Chimpanzini Bananini"]=banana,["Lirili Larila"]=lirili,
  ["Brr Brr Patapim"]=patapim,["La Vaca Saturno Saturnita"]=vaca,["Frigo Camelo"]=frigo,
  ["Giraffa Celeste"]=giraffa,["Boneca Ambalabu"]=boneca,["Trippi Troppi"]=trippi,
+ ["Cappuccino Assassino"]=assassino,["Gorillo Watermelondrillo"]=watermelon,
+ ["Crostino Motorello"]=crostino,["Trombetta Gamberetta"]=gamberetta,
 }
 local function fallback(m,p,c,g,id,name)
  local form=(id-1)%8
@@ -134,11 +177,11 @@ local function fallback(m,p,c,g,id,name)
  elseif form==4 then
   local b=part(m,"BirdBody",Vector3.new(3.4,4.5,3),p,c,Enum.Material.SmoothPlastic,Enum.PartType.Ball);m.PrimaryPart=b;ball(m,"BirdHead",Vector3.new(3.4,3.2,3.2),p+Vector3.new(0,2.4,0),c);face(m,p+Vector3.new(0,2.4,0),Vector3.new(3.4,3.2,3.2),c);for s=-1,1,2 do wedge(m,"Wing",Vector3.new(2.5,1,.9),p+Vector3.new(s*2,.2,0),g);part(m,"BirdLeg",Vector3.new(.4,1.5,.4),p+Vector3.new(s*.8,-2.5,0),g) end
  elseif form==5 then
-  local b=part(m,"FoodMachineBody",Vector3.new(4,5,3.3),p,c,Enum.Material.Metal);m.PrimaryPart=b;part(m,"DisplayWindow",Vector3.new(3,.55,.15),p+Vector3.new(0,1.2,-1.72),g,Enum.Material.Neon);part(m,"ControlPanel",Vector3.new(1.4,1.4,.18),p+Vector3.new(1,-.8,-1.72),Color3.fromRGB(45,50,65),Enum.Material.Metal);for s=-1,1,2 do ball(m,"MachineWheel",Vector3.new(1,1,1),p+Vector3.new(s*1.5,-2,0),Color3.fromRGB(40,45,50),Enum.Material.Rubber) end
+  local b=part(m,"FoodMachineBody",Vector3.new(4,5,3.3),p,c,Enum.Material.Metal);m.PrimaryPart=b;part(m,"DisplayWindow",Vector3.new(3,.55,.15),p+Vector3.new(0,1.2,-1.72),g,Enum.Material.Neon);part(m,"ControlPanel",Vector3.new(1.4,1.4,.18),p+Vector3.new(1,-.8,-1.72),Color3.fromRGB(45,50,65),Enum.Material.Metal);face(m,p+Vector3.new(0,2.0,-1.6),Vector3.new(2.6,2.0,1),c);for s=-1,1,2 do ball(m,"MachineWheel",Vector3.new(1,1,1),p+Vector3.new(s*1.5,-2,0),Color3.fromRGB(40,45,50),Enum.Material.Rubber) end
  elseif form==6 then
   local b=ball(m,"BlobBody",Vector3.new(4.5,3.8,4.2),p,c);m.PrimaryPart=b;for i=1,5 do local a=i*math.pi*2/5;ball(m,"BlobSpikes",Vector3.new(1.25,1.25,1.25),p+Vector3.new(math.cos(a)*2.2,1+((i%2)*.6),math.sin(a)*2.2),g) end;face(m,p+Vector3.new(0,.3,-1.9),Vector3.new(2.8,2.6,1.6),c)
  else
-  local b=part(m,"RocketCreature",Vector3.new(3.2,5.8,3.2),p,c,Enum.Material.Metal,Enum.PartType.Cylinder);b.Orientation=Vector3.new(0,0,90);m.PrimaryPart=b;ball(m,"Porthole",Vector3.new(1.8,1.8,.4),p+Vector3.new(0,.4,-1.75),g,Enum.Material.Glass);for s=-1,1,2 do wedge(m,"RocketFin",Vector3.new(1.7,2,.55),p+Vector3.new(s*1.55,-1.5,0),g,Vector3.new(0,0,s*18)) end;wedge(m,"NoseCone",Vector3.new(2,1.8,2),p+Vector3.new(0,3,0),g)
+  local b=part(m,"RocketCreature",Vector3.new(3.2,5.8,3.2),p,c,Enum.Material.Metal,Enum.PartType.Cylinder);b.Orientation=Vector3.new(0,0,90);m.PrimaryPart=b;ball(m,"Porthole",Vector3.new(1.8,1.8,.4),p+Vector3.new(0,.4,-1.75),g,Enum.Material.Glass);face(m,p+Vector3.new(0,1.2,-1.55),Vector3.new(2.4,2.0,1),c);for s=-1,1,2 do wedge(m,"RocketFin",Vector3.new(1.7,2,.55),p+Vector3.new(s*1.55,-1.5,0),g,Vector3.new(0,0,s*18)) end;wedge(m,"NoseCone",Vector3.new(2,1.8,2),p+Vector3.new(0,3,0),g)
  end
  local labelName=name
  return labelName

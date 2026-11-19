@@ -37,6 +37,19 @@ function Map.Build()
  local market=model("BrainrotMarketplace");U.Part(market,"MarketFloor",Vector3.new(280,4,580),Vector3.new(0,1,610),Color3.fromRGB(35,35,58),Enum.Material.Marble)
  U.Label(U.Part(market,"MarketSign",Vector3.new(100,8,4),Vector3.new(0,30,320),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BRAINROT BAZAAR",Color3.new(1,1,1))
  for i=1,8 do local x=-112+(i-1)*32;local rarity=({"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","DIVINE"})[i];local col=C.Rarities[rarity].Color;building(market,rarity.."Hall",Vector3.new(x,3,860),col,27,18,70,rarity) end
+ -- Session 17: the Bazaar is now an ENCLOSED space, not an open field of
+ -- stalls. Glass walls (12 tall, sitting on the floor top y=3) run around
+ -- the whole 280x580 floor, with two clear entrances: NORTH (a 40-stud gap
+ -- at x -20..20, aligned with the MarketNorthRamp) and EAST (a 40-stud gap
+ -- at z 580..620). The halls at z=860 sit inside the south wall.
+ local function glassWall(name,size,pos) local w=U.Part(market,name,size,pos,Color3.fromRGB(180,230,255),Enum.Material.Glass);w.Transparency=.4;w.CanCollide=true;return w end
+ glassWall("GlassWallNorthA",Vector3.new(120,12,.5),Vector3.new(-80,9,320))
+ glassWall("GlassWallNorthB",Vector3.new(120,12,.5),Vector3.new(80,9,320))
+ glassWall("GlassWallSouth",Vector3.new(280,12,.5),Vector3.new(0,9,900))
+ glassWall("GlassWallEastA",Vector3.new(.5,12,260),Vector3.new(140,9,450))
+ glassWall("GlassWallEastB",Vector3.new(.5,12,280),Vector3.new(140,9,760))
+ glassWall("GlassWallWest",Vector3.new(.5,12,580),Vector3.new(-140,9,610))
+ U.Label(U.Part(market,"MarketEntranceSign",Vector3.new(60,6,2),Vector3.new(0,16,320),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BAZAAR  •  ENTER",Color3.new(1,1,1))
  end)
  district("nature",function()
  -- canal, bridge, tunnel, lakeshore/beach, hills, forest, mountain silhouettes
@@ -157,6 +170,57 @@ function Map.Build()
   end
  end
  for i=1,22 do local x=-900+(i%11)*180;local z=-500+math.floor(i/11)*850;building(root,"Residence_"..i,Vector3.new(x,0,z),Color3.fromHSV((i*.071)%1,.45,.95),52,24+(i%3)*6,48) end
+ end)
+ district("landscapes",function()
+ -- Session 17 JOB 1: every zone sits on its OWN landscape, not the shared
+ -- flat green ground with a 140x140 inlay. Each zone gets a large ground
+ -- slab (280x280, top y=-0.9, flush with the roads) in its own ground
+ -- colour/material, plus terrain features that read at a glance. The slab
+ -- is under the zone inlay (inlay top y=0.05), the arrival platform
+ -- (top y=0) and the travel-pad footing (bottom y=-1, embedded 0.1 into
+ -- the slab) — nothing floats, nothing is buried. Anchors, pads, platforms
+ -- and stall positions do NOT move.
+ local function slab(name,size,pos,color,material) local s=U.Part(root,name,size,pos,color,material);return s end
+ -- Starter City: paved piazza stone.
+ slab("StarterLandscape",Vector3.new(280,1,280),Vector3.new(0,-1.4,0),Color3.fromRGB(200,190,170),Enum.Material.Cobblestone)
+ for _,sx in ipairs({-1,1}) do for _,sz in ipairs({-1,1}) do local planter=U.Part(root,"PiazzaPlanter",Vector3.new(14,4,14),Vector3.new(sx*100,-0.9+2,sz*100),Color3.fromRGB(150,140,120),Enum.Material.Concrete);U.Part(root,"PlanterBloom",Vector3.new(10,6,10),planter.Position+Vector3.new(0,4,0),Color3.fromRGB(255,120,180),Enum.Material.Grass).Shape=Enum.PartType.Ball end end
+ for _,z in ipairs({-85,85}) do U.Part(root,"PiazzaBorder",Vector3.new(170,1,4),Vector3.new(0,-1.4,z),Color3.fromRGB(120,115,105),Enum.Material.Slate) end
+ for _,x in ipairs({-85,85}) do U.Part(root,"PiazzaBorder",Vector3.new(4,1,170),Vector3.new(x,-1.4,0),Color3.fromRGB(120,115,105),Enum.Material.Slate) end
+ -- Italian Village: warm terracotta ground, cobbled lane, cottages.
+ slab("VillageLandscape",Vector3.new(280,1,280),Vector3.new(-700,-1.4,450),Color3.fromRGB(205,170,120),Enum.Material.Cobblestone)
+ U.Part(root,"VillageLane",Vector3.new(280,1,8),Vector3.new(-700,-1.35,580),Color3.fromRGB(150,120,90),Enum.Material.Cobblestone)
+ for _,c in ipairs({Vector3.new(-820,0,520),Vector3.new(-580,0,320)}) do building(root,"VillageCottage",c,Color3.fromRGB(245,220,180),30,18,26,"CASA") end
+ -- Neon City: dark night ground, glowing grid (skips the platform/pad
+ -- columns and rows so no neon strip runs under a landing).
+ slab("NeonLandscape",Vector3.new(280,1,280),Vector3.new(700,-1.4,-400),Color3.fromRGB(20,22,35),Enum.Material.Slate)
+ for _,z in ipairs({-520,-440,-360,-280}) do U.Part(root,"NeonGridStrip",Vector3.new(280,.2,2),Vector3.new(700,-0.85,z),Color3.fromRGB(255,65,190),Enum.Material.Neon) end
+ for _,x in ipairs({580,660,740,820}) do U.Part(root,"NeonGridStrip",Vector3.new(2,.2,280),Vector3.new(x,-0.85,-400),Color3.fromRGB(50,235,255),Enum.Material.Neon) end
+ for _,a in ipairs({Vector3.new(580,0,-280),Vector3.new(820,0,-520)}) do local arch=U.Part(root,"NeonArch",Vector3.new(4,22,4),a+Vector3.new(0,10,0),Color3.fromRGB(185,95,255),Enum.Material.Neon);U.Part(root,"NeonArchTop",Vector3.new(24,3,3),a+Vector3.new(0,21,0),Color3.fromRGB(185,95,255),Enum.Material.Neon) end
+ -- Luxury District: white marble ground, gold trim, statues.
+ slab("LuxuryLandscape",Vector3.new(280,1,280),Vector3.new(800,-1.4,650),Color3.fromRGB(240,235,225),Enum.Material.Marble)
+ for _,z in ipairs({510,790}) do U.Part(root,"GoldTrim",Vector3.new(280,1,3),Vector3.new(800,-1.35,z),Color3.fromRGB(255,215,0),Enum.Material.Metal) end
+ for _,s in ipairs({Vector3.new(670,0,780),Vector3.new(930,0,520)}) do local ped=U.Part(root,"MarbleStatuePedestal",Vector3.new(10,6,10),s+Vector3.new(0,2,0),Color3.fromRGB(245,245,240),Enum.Material.Marble);U.Part(root,"MarbleStatue",Vector3.new(6,14,6),ped.Position+Vector3.new(0,9,0),Color3.fromRGB(255,215,0),Enum.Material.Metal).Shape=Enum.PartType.Ball end
+ -- Volcano: black basalt ground, lava flows radiating outside the rim
+ -- (rim radius 125; flows at radius ~135, clear of the platform and pad),
+ -- obsidian boulders and ash mounds just outside the rim.
+ slab("VolcanoLandscape",Vector3.new(280,1,280),Vector3.new(-1100,-1.4,-800),Color3.fromRGB(30,28,32),Enum.Material.Slate)
+ for _,f in ipairs({Vector3.new(-965,-800),Vector3.new(-1235,-800),Vector3.new(-1100,-665),Vector3.new(-1100,-935)}) do local flow=U.Part(root,"LavaFlow",Vector3.new(24,.4,5),Vector3.new(f.X,-0.7,f.Y),Color3.fromRGB(255,90,30),Enum.Material.Neon);if f.X==-1100 then flow.Size=Vector3.new(5,.4,24) end end
+ for _,b in ipairs({Vector3.new(-1200,-700),Vector3.new(-1000,-700),Vector3.new(-1200,-900),Vector3.new(-1000,-900)}) do local rock=U.Part(root,"ObsidianBoulder",Vector3.new(12,10,12),Vector3.new(b.X,4,b.Y),Color3.fromRGB(25,20,35),Enum.Material.Slate);rock.Shape=Enum.PartType.Ball end
+ for _,m in ipairs({Vector3.new(-1150,-680),Vector3.new(-1050,-920)}) do local ash=U.Part(root,"AshMound",Vector3.new(18,6,18),Vector3.new(m.X,2,m.Y),Color3.fromRGB(120,115,110),Enum.Material.Sand);ash.Shape=Enum.PartType.Ball end
+ -- Sky Islands: a big floating island (top y=99, matching the island tops)
+ -- plus clouds and two satellite islands — the zone is IN the sky, not on
+ -- the ground. The market island slab gives the Sky market solid ground.
+ local skyDisc=U.Part(root,"SkyMainIsland",Vector3.new(200,8,200),Vector3.new(1100,95,850),Color3.fromRGB(100,205,145),Enum.Material.Grass);skyDisc.Shape=Enum.PartType.Cylinder
+ for _,c in ipairs({Vector3.new(1010,86,780),Vector3.new(1190,88,920),Vector3.new(1020,84,920),Vector3.new(1180,86,780)}) do local cloud=U.Part(root,"SkyCloud",Vector3.new(30,14,30),c,Color3.fromRGB(235,250,255),Enum.Material.SmoothPlastic);cloud.Shape=Enum.PartType.Ball end
+ for _,s in ipairs({Vector3.new(950,92,780),Vector3.new(1250,92,920)}) do local isl=U.Part(root,"SkySatelliteIsland",Vector3.new(60,6,60),s,Color3.fromRGB(100,205,145),Enum.Material.Grass);isl.Shape=Enum.PartType.Cylinder end
+ local mktIsland=U.Part(root,"SkyMarketIsland",Vector3.new(140,10,120),Vector3.new(1075,94,730),Color3.fromRGB(100,205,145),Enum.Material.Grass);mktIsland.Shape=Enum.PartType.Cylinder
+ -- Secret Dimension: dark purple rift ground. The slab is 280x200 centred
+ -- on the anchor (z 1000..1200) so it never overlaps the base plots, which
+ -- end at z=960. Floating shards and dark spires at the corners, clear of
+ -- the market grid, the platform and the pad.
+ slab("SecretLandscape",Vector3.new(280,1,200),Vector3.new(0,-1.4,1100),Color3.fromRGB(40,25,60),Enum.Material.Slate)
+ for _,s in ipairs({Vector3.new(-120,1020),Vector3.new(120,1020),Vector3.new(-120,1180)}) do U.Part(root,"DarkSpire",Vector3.new(6,26,6),s+Vector3.new(0,12,0),Color3.fromRGB(90,40,160),Enum.Material.Neon) end
+ for _,s in ipairs({Vector3.new(80,12,1050),Vector3.new(-80,14,1150)}) do local shard=U.Part(root,"FloatingShard",Vector3.new(8,14,8),s,Color3.fromRGB(180,80,255),Enum.Material.Neon);shard.Shape=Enum.PartType.Wedge;shard.Orientation=Vector3.new(0,45,0) end
  end)
  district("city",function()
  for i=1,10 do local x=-900+i*90;local light=U.Part(root,"StreetLamp",Vector3.new(2,24,2),Vector3.new(x,11,-200),Color3.fromRGB(60,60,75),Enum.Material.Metal);U.Part(root,"LampGlow",Vector3.new(7,1,7),light.Position+Vector3.new(0,12,0),Color3.fromRGB(255,235,140),Enum.Material.Neon) end
