@@ -17,7 +17,18 @@ local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
  B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0))
  local price=math.floor(e.Price*multiplier+.5)
  if zoneName then U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end
- local prompt=Instance.new("ProximityPrompt");prompt.ActionText=(zoneName and (string.upper(zoneName).." ×"..multiplier.." • ") or "").."BUY  $"..price;prompt.ObjectText=e.Name.." • "..e.Rarity.." • +$"..e.Income.."/s";prompt.HoldDuration=.4;prompt.MaxActivationDistance=12;prompt.Parent=stand
+ local actionText=(zoneName and (string.upper(zoneName).." ×"..multiplier.." • ") or "").."BUY  $"..price
+ local objectText=e.Name.." • "..e.Rarity.." • +$"..e.Income.."/s"
+ if not zoneName and (e.Rarity=="SECRET" or e.Rarity=="DIVINE") then
+  local lockedZone=e.Rarity=="SECRET" and "Volcano" or "Secret Dimension"
+  local requirement
+  for _,zone in ipairs(C.Zones) do if zone.Name==lockedZone then requirement=zone;break end end
+  if requirement then
+   actionText=string.upper(lockedZone).." LOCK"
+   objectText=objectText.." • Requires Base Lv "..requirement.Level.." + Rebirth "..requirement.Rebirths
+  end
+ end
+ local prompt=Instance.new("ProximityPrompt");prompt.ActionText=actionText;prompt.ObjectText=objectText;prompt.HoldDuration=.4;prompt.MaxActivationDistance=12;prompt.Parent=stand
  if zoneName then stand:SetAttribute("ZoneName",zoneName);stand:SetAttribute("BrainrotId",e.Id);stand:SetAttribute("PriceMultiplier",multiplier) end
  prompt.Triggered:Connect(function(p) Shop.Buy(p,e.Id,remotes,zoneName) end)
 end
@@ -60,7 +71,13 @@ function Shop.Buy(p,id,remotes,zoneName)
  local stall=zoneName and workspace:FindFirstChild("ZoneBrainrotStalls") or workspace:FindFirstChild("BrainrotMarketplace")
  local soundParent
  if stall and zoneName then for _,candidate in ipairs(stall:GetChildren()) do if candidate:GetAttribute("ZoneName")==zoneName and candidate:GetAttribute("BrainrotId")==id then soundParent=candidate;break end end elseif stall then soundParent=stall:FindFirstChild("Display"..id) end
- if soundParent then pcall(function() local Debris=game:GetService("Debris");local sound=Instance.new("Sound");sound.Name="BrainrotPurchase";sound.SoundId="rbxasset://sounds/electronicpingshort.wav";sound.Volume=.8;sound.Parent=soundParent;Debris:AddItem(sound,4);sound:Play() end) end
+ if soundParent then pcall(function()
+  local Debris=game:GetService("Debris")
+  local speeds={COMMON=1,UNCOMMON=1.08,RARE=1.16,EPIC=1.24,LEGENDARY=1.34,MYTHIC=1.45,SECRET=1.58,DIVINE=1.72}
+  local sound=Instance.new("Sound");sound.Name="BrainrotPurchase";sound.SoundId="rbxasset://sounds/electronicpingshort.wav";sound.Volume=.8;sound.PlaybackSpeed=speeds[e.Rarity] or 1;sound.Parent=soundParent;Debris:AddItem(sound,4);sound:Play()
+  local hasHighLayer=e.Rarity=="LEGENDARY" or e.Rarity=="MYTHIC" or e.Rarity=="SECRET" or e.Rarity=="DIVINE"
+  if hasHighLayer then task.delay(.12,function() pcall(function() local layer=Instance.new("Sound");layer.Name="BrainrotPurchaseHighLayer";layer.SoundId="rbxasset://sounds/electronicpingshort.wav";layer.Volume=.55;layer.PlaybackSpeed=(speeds[e.Rarity] or 1)*1.22;layer.Parent=soundParent;Debris:AddItem(layer,4);layer:Play() end) end) end
+ end) end
  remotes.Notify:FireClient(p,"PURCHASED "..e.Name.."!  •  $"..price,e.Rarity);return true
 end
 return Shop
