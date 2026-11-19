@@ -61,9 +61,12 @@ function Map.Build()
   for _,hill in ipairs(hills) do local value=((x-hill.x)/hill.rx)^2+((z-hill.z)/hill.rz)^2;if value<=1 then clear=false;break end end
   if clear then stoneCount+=1;local stone=U.Part(root,"GardenStone",Vector3.new(8,6,7),Vector3.new(x,3,z),Color3.fromRGB(145,151,133),Enum.Material.Rock);stone.Shape=Enum.PartType.Ball end
  end end
- for i=1,48 do local x=-1270+(i%12)*42;local z=330+math.floor(i/12)*145;local flower=U.Part(root,"Wildflower",Vector3.new(3,3,3),Vector3.new(x,1.5,z),Color3.fromHSV((i*.13)%1,.7,1),Enum.Material.Neon);flower.Shape=Enum.PartType.Ball end
+ local movedFlowers=0
+ for i=1,48 do local x=-1270+(i%12)*42;local z=330+math.floor(i/12)*145;if math.abs(x)==1102 then x=-1040;movedFlowers+=1 end;local flower=U.Part(root,"Wildflower",Vector3.new(3,3,3),Vector3.new(x,1.5,z),Color3.fromHSV((i*.13)%1,.7,1),Enum.Material.Neon);flower.Shape=Enum.PartType.Ball end
  warn("[IBW] Outer landscape: "..#hills.." rolling hills, "..palmCount.." palms, "..stoneCount.." clear stones, 48 wildflowers")
- for i=1,80 do local x=-1050+(i%10)*70;local z=640+math.floor(i/10)*60;local trunk=U.Part(root,"TreeTrunk",Vector3.new(5,16,5),Vector3.new(x,8,z),Color3.fromRGB(120,76,40),Enum.Material.Wood);local crown=U.Part(root,"TreeCrown",Vector3.new(21,24,21),Vector3.new(x,24,z),Color3.fromRGB((i%2==0) and 50 or 40,190,(i%3)*35),Enum.Material.Grass);crown.Shape=Enum.PartType.Ball end
+ local skippedYardTrees=0
+ for i=1,80 do local x=-1050+(i%10)*70;local z=640+math.floor(i/10)*60;local inBaseYard=false;if z>=840 and z<=960 then for plot=1,8 do local plotX=-700+(plot-1)*180;if math.abs(x-plotX)<=70 then inBaseYard=true;break end end end;if inBaseYard then skippedYardTrees+=1 else local trunk=U.Part(root,"TreeTrunk",Vector3.new(5,16,5),Vector3.new(x,8,z),Color3.fromRGB(120,76,40),Enum.Material.Wood);local crown=U.Part(root,"TreeCrown",Vector3.new(21,24,21),Vector3.new(x,24,z),Color3.fromRGB((i%2==0) and 50 or 40,190,(i%3)*35),Enum.Material.Grass);crown.Shape=Enum.PartType.Ball end end
+ warn("[IBW] Placement fixes: "..skippedYardTrees.." yard trees skipped, "..movedFlowers.." ramp flowers shifted")
  for i=1,12 do local x=-1100+i*100;local m=U.Part(root,"Mountain",Vector3.new(170,190,170),Vector3.new(x,85,-1030),Color3.fromRGB(112,130,150),Enum.Material.Rock);m.Shape=Enum.PartType.Ball end
  end)
  district("zones",function()
