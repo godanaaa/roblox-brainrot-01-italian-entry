@@ -27,9 +27,9 @@ function Map.Build()
  end)
  district("market",function()
  -- marketplace is its own destination, with colored halls
- local market=model("BrainrotMarketplace");U.Part(market,"MarketFloor",Vector3.new(280,4,220),Vector3.new(0,1,430),Color3.fromRGB(35,35,58),Enum.Material.Marble)
+ local market=model("BrainrotMarketplace");U.Part(market,"MarketFloor",Vector3.new(280,4,480),Vector3.new(0,1,560),Color3.fromRGB(35,35,58),Enum.Material.Marble)
  U.Label(U.Part(market,"MarketSign",Vector3.new(100,8,4),Vector3.new(0,30,320),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BRAINROT BAZAAR",Color3.new(1,1,1))
- for i=1,8 do local x=-112+(i-1)*32;local rarity=({"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","DIVINE"})[i];local col=C.Rarities[rarity].Color;building(market,rarity.."Hall",Vector3.new(x,3,485),col,27,18,70,rarity) end
+ for i=1,8 do local x=-112+(i-1)*32;local rarity=({"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","DIVINE"})[i];local col=C.Rarities[rarity].Color;building(market,rarity.."Hall",Vector3.new(x,3,860),col,27,18,70,rarity) end
  end)
  district("nature",function()
  -- canal, bridge, tunnel, lakeshore/beach, hills, forest, mountain silhouettes
