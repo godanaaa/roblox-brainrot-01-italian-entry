@@ -9,7 +9,13 @@ function Base.Init()
  end
 end
 function Base.Claim(player)
- for _,plot in ipairs(Base.Plots) do if not plot.Owner then plot.Owner=player;Base.Rebuild(plot,1,player);return plot end end
+ if Base.Get(player) then return Base.Get(player) end
+ for _,plot in ipairs(Base.Plots) do if not plot.Owner then
+  local ok,err=xpcall(function() Base.Rebuild(plot,1,player) end,debug.traceback)
+  if not ok then warn("[IBW] Base.Claim failed for "..player.Name.." at part/line: "..tostring(err));return nil end
+  plot.Owner=player;return plot
+ end end
+ warn("[IBW] Base.Claim found no available plot for "..player.Name)
 end
 function Base.Rebuild(plot,level,player)
  local m=plot.Model;for _,o in ipairs(m:GetChildren()) do if o.Name~="Yard" then o:Destroy() end end;plot.Level=level;local p=plot.Position;local scale=1+(level-1)*.22
