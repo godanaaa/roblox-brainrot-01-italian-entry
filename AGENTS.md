@@ -1,47 +1,34 @@
-# Italian Brainrot World — session 5 map build fix
+# AGENTS.md — Italian Brainrot World, session 6
 
-Session 5 fixes the oversized map parts that could leave the game with an
-empty workspace. In `src/server/Services/MapBuilder.luau`, the old first
-part was a 2600×8×2200 ground slab, and the horizontal highway edges were
-2200×2×32. The build now uses four 1300×8×1100 ground tiles (line 16),
-and each highway edge is two 1100×2×32 pieces (line 20). This is the
-verified structural defect and safe correction. Roblox Studio is not
-available in this environment, so whether the old `Size` assignment itself
-threw was not runtime-confirmed.
+## Session 6 fixes
 
-`Map.Build` now builds five guarded districts: ground + roads, market,
-nature, zones, and city (lines 11–75). District failures emit `[IBW]` with
-the traceback and source line. The final self-check at lines 76–79 counts
-world descendants and checks for all four ground tiles, the plaza, an
-avenue, the highway, and marketplace; it warns if anything is missing or
-the world has fewer than 100 descendants.
+The owner’s Studio Output showed `Services is not a valid member of ServerScriptService` at `Server:12`. Rojo maps `src/server` to the `Server` Script, with `Services` beneath that Script. Updated `src/server/init.server.luau:12` to `script:WaitForChild("Services")`, which resolves the actual child.
 
-The server startup reports Init success/failure. Base claims are idempotent
-and catch/report rebuild failures (`BaseService.luau`, lines 11–19). The
-duplicate Play handler was removed from `GameService.luau`; the startup
-handler reports data, claim, character-load, and spawn errors. `START
-PLAYING` loads the character and moves it to (0, 8, 0), above the central
-plaza top at y=3 (`init.server.luau`, lines 17–25). Roblox runtime
-playtesting remains to be performed in Studio.
+The world self-check in `src/server/Services/MapBuilder.luau:78–79` previously searched for `BrainrotMarketplace` beneath `ItalianBrainrotWorld`, although MapBuilder parents the marketplace directly to Workspace. The check now looks up the market in `workspace` and retains the other required-object checks beneath the world model.
 
-Static part-size audit: no part size exceeds 2048 studs in any dimension.
-The largest left in place is 2000 studs (canal length and highway ramp
-length); the avenues and boulevard are 1900, and the canal is 2000.
+Remote references in the server bootstrap after Play installation are guarded by `if Remotes then` at line 54. The client controllers now wait for the server-created `ReplicatedStorage.Remotes` folder before accessing it: `InteractionController`, `EffectsController`, and `HUDController`.
 
-Session verification: Rojo builds `game.rbxl` cleanly; `MAKEFUN_OUTPUT_DIR=out
-node main.ts` was run twice and produced identical `dossier.json` hashes.
-The output directory contains `game.rbxl`, `PLAY.json`, `src/`,
-`screenshots/`, and `dossier.json`. The fresh level-27 kit verified 21
-files, then its check stopped at `git -C` with sandbox `EPERM`; the host
-coordinator must rerun it. No Studio playtest or screenshot capture was
-possible here. The coordinator runs the bundle dry-run with session 5
-added; sessions 1–4 already passed.
+## Path audit
+
+Audited all `script.Parent`, `script:`, `GetService`, `FindFirstChild`, and `WaitForChild` uses in `src/**/*.luau` against `default.project.json` and the created instance tree.
+
+- `init.server.luau`: `script:WaitForChild("Services")` matches the `Services` child Rojo places beneath the `Server` Script. Its module lookups (`DataService`, `BaseService`, `GameService`, `MapBuilder`, `ShopService`, `CoinService`, `QuestService`, `RebirthService`, `EventService`, `LeaderboardService`, `VehicleService`, and `PremiumService`) are children of that folder.
+- Server service `script.Parent.*` module references resolve to sibling ModuleScripts in `src/server/Services` (`DataService`, `BaseService`, `BrainrotService`, and `CoinService` as used). Shared `Config`, `Util`, and `Remotes` resolve beneath `ReplicatedStorage.Modules` from the project mapping.
+- `ClientMain.client.luau` uses `script.Parent[name]` for sibling client controllers in the `Client` folder. `PlayerGui` waits target the local player’s child. Client remote-folder references now wait for the server-created child of `ReplicatedStorage`.
+- `src/shared/Remotes.luau` creates or reuses `ReplicatedStorage.Remotes`, then creates/reuses the named remote children.
+- World lookups were checked against `MapBuilder`: the world model is in Workspace; `BrainrotMarketplace` is a Workspace sibling of that model; `PremiumShop/Facade` and `Dealership/Facade` are under the world model. The market floor is under the marketplace. Base garage and vehicle seat lookups target children created by their respective builders. GUI and leaderstats lookups target children created by those scripts.
+- All `GetService` targets checked (`Players`, `ReplicatedStorage`, `ContextActionService`, `DataStoreService`, `RunService`, and `Debris`) are Roblox services.
+
+No other parent-versus-self path error was found. The `Play` handler is installed at line 17 before loading the other services and before `Map.Build` at line 39. The tail remote handlers and the state broadcast loop are inside the `Remotes` guard at lines 54–63.
+
+## Verification completed
+
+- Rojo build: `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded.
+- Ran `MAKEFUN_OUTPUT_DIR=out node main.ts` twice. `out/dossier.json` had the same SHA-256 both times: `8998cb8467632dd9f9f7823c035df144bc344bddd80092ac2737933d30036b34`. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
+- Fresh level-27 kit check verified 21 files. Its only reported issue was the sandbox git probe (`spawnSync git EPERM`); the coordinator must rerun that check where git works. `PLAY.json` remains for the owner’s publish/recording step.
+- Static scan of literal `Vector3.new` dimensions found none above 2048. The four 1300×8×1100 ground tiles, split highway, guarded districts, and earlier text-size limits remain in place.
+- The coordinator runs the bundle dry-run on the host with session 6 added; sessions 1–5 already passed.
 
 ## Final recording plan
 
-After the owner opens the place in Studio, checks Output for the district
-build and `WORLD SELF-CHECK PASSED` messages, confirms the START PLAYING
-spawn is on the plaza, publishes, and captures the final screenshots, the
-owner records the final play link in `PLAY.json` and refreshes the approved
-screenshots. Then the coordinator reruns the host-side kit check and bundle
-dry-run with this session included.
+Ryan should first re-test in Studio and confirm the Server script reaches the `[IBW] Map district` / `WORLD SELF-CHECK PASSED` output without the line-12 error. Ryan then publishes and captures the final screenshots. The final recording session should update `PLAY.json` and screenshots only after that owner-side re-test and capture. Do not commit or push from this sandbox; the coordinator handles the commit.
