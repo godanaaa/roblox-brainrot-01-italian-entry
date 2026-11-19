@@ -21,6 +21,21 @@ if Remotes then
   if not p.Character then local ok,err=pcall(function() p:LoadCharacter() end);if not ok then warn("[IBW] Play LoadCharacter failed for "..p.Name..": "..tostring(err)) end end
   task.wait(.2)
   if p.Character then local ok,err=pcall(function() p.Character:PivotTo(CFrame.new(0,8,0)) end);if not ok then warn("[IBW] Play plaza spawn failed for "..p.Name..": "..tostring(err)) end end
+  -- Session 17 hook: a welcome guide for a brand-new player (0 brainrots
+  -- owned). Three timed notifies teach the loop in the first minute — buy,
+  -- collect, travel — so the opening minutes always have something to do.
+  -- The first world event already arrives at ~25s; the guide fills the
+  -- minutes around it. Only fires for new players, not every Play press.
+  task.spawn(function()
+   local dd=Data.Get(p)
+   if dd and #dd.Owned==0 then
+    Remotes.Notify:FireClient(p,"WELCOME! • Buy your first Brainrot for $50 at the Bazaar!","COMMON")
+    task.wait(8)
+    if p.Parent then Remotes.Notify:FireClient(p,"YOUR BRAINROTS EARN MONEY • Collect income at your base pad!","COMMON") end
+    task.wait(8)
+    if p.Parent then Remotes.Notify:FireClient(p,"TRAVEL • Press M for the Map — Italian Village is already open!","COMMON") end
+   end
+  end)
   return true
  end
 end
