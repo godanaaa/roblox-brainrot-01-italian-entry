@@ -75,7 +75,8 @@ function Map.Build()
  end)
  local descendants=#root:GetDescendants()
  local missing={}
- for _,required in ipairs({"WorldGround_-1_-1","WorldGround_-1_1","WorldGround_1_-1","WorldGround_1_1","SpawnPlaza","BrainrotMarketplace","Avenue","HighwayRing_-1_1"}) do if not root:FindFirstChild(required,true) then table.insert(missing,required) end end
+ for _,required in ipairs({"WorldGround_-1_-1","WorldGround_-1_1","WorldGround_1_-1","WorldGround_1_1","SpawnPlaza","Avenue","HighwayRing_-1_1"}) do if not root:FindFirstChild(required,true) then table.insert(missing,required) end end
+ if not workspace:FindFirstChild("BrainrotMarketplace") then table.insert(missing,"BrainrotMarketplace") end
  if descendants<100 or #missing>0 then warn("[IBW] WORLD SELF-CHECK FAILED: descendants="..descendants..", missing="..table.concat(missing,", ")) else warn("[IBW] WORLD SELF-CHECK PASSED: "..descendants.." descendants; ground tiles, roads, plaza, and marketplace exist") end
  return root
 end
