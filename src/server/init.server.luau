@@ -5,7 +5,7 @@ local function safeRequire(moduleScript,label)
 end
 local function safeInit(label,callback)
  local ok,err=pcall(callback)
- if not ok then warn("[IBW] "..label.." failed safely: "..tostring(err)) end
+ if not ok then warn("[IBW] Init '"..label.."' failed at part/line: "..tostring(err)) else warn("[IBW] Init '"..label.."' completed") end
  return ok
 end
 local Remotes=safeRequire(game.ReplicatedStorage.Modules.Remotes,"Remotes")
@@ -15,12 +15,12 @@ local Base
 -- Install Play before loading other services, building the map, or initializing anything.
 if Remotes then
  Remotes.Play.OnServerInvoke=function(p)
-  local dataOk=pcall(function() if not Data.Get(p) then Data.Load(p) end end)
-  if not dataOk then warn("[IBW] Player data initialization failed during Play") end
-  if Base then pcall(function() if not Base.Get(p) then Base.Claim(p) end end) end
-  if not p.Character then pcall(function() p:LoadCharacter() end) end
+  local dataOk,dataErr=pcall(function() if not Data.Get(p) then Data.Load(p) end end)
+  if not dataOk then warn("[IBW] Play data initialization failed for "..p.Name..": "..tostring(dataErr)) end
+  if Base then local ok,err=pcall(function() if not Base.Get(p) then Base.Claim(p) end end);if not ok then warn("[IBW] Play Base.Claim failed for "..p.Name..": "..tostring(err)) end end
+  if not p.Character then local ok,err=pcall(function() p:LoadCharacter() end);if not ok then warn("[IBW] Play LoadCharacter failed for "..p.Name..": "..tostring(err)) end end
   task.wait(.2)
-  if p.Character then pcall(function() p.Character:PivotTo(CFrame.new(0,8,0)) end) end
+  if p.Character then local ok,err=pcall(function() p.Character:PivotTo(CFrame.new(0,8,0)) end);if not ok then warn("[IBW] Play plaza spawn failed for "..p.Name..": "..tostring(err)) end end
   return true
  end
 end
