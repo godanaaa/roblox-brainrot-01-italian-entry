@@ -58,6 +58,30 @@ Remotes.Rebirth.OnServerInvoke=Rebirth.Try;Remotes.QuestClaim.OnServerInvoke=Que
 Remotes.Travel.OnServerInvoke=function(p,where) local d=Data.Get(p);if not d then d=Data.Load(p) end;if not d then Remotes.Notify:FireClient(p,"TRAVEL FAILED • Your player data is still loading. Try again shortly.","LOCKED");return false end;if not p.Character then Remotes.Notify:FireClient(p,"TRAVEL FAILED • Character is not ready yet. Try again.","LOCKED");return false end;if where=="Home" then local plot=Base.Get(p);if plot then p.Character:PivotTo(CFrame.new(plot.Position+Vector3.new(0,8,0)));return true end;Remotes.Notify:FireClient(p,"HOME UNAVAILABLE • Your base is not ready yet.","LOCKED");return false end;for _,zone in ipairs(Config.Zones)do if zone.Name==where then if d.Cash<zone.Requirement or d.BaseLevel<(zone.Level or 1) or d.Rebirths<(zone.Rebirths or 0) then Remotes.Notify:FireClient(p,string.format("LOCKED • Requires $%s, Base Lv %d, Rebirth %d",tostring(zone.Requirement),zone.Level,zone.Rebirths),"LOCKED");return false end;d.UnlockedZones[where]=true;local destination=zone.Position;if where=="Volcano" then destination+=Vector3.new(0,0,-75) elseif where=="Secret Dimension" then destination+=Vector3.new(0,0,-25) end;p.Character:PivotTo(CFrame.new(destination+Vector3.new(0,8,0)));return true end end;if where=="Market" then p.Character:PivotTo(CFrame.new(0,12,300));return true end;return false end
  game.Players.PlayerAdded:Connect(function(p) Data.Load(p);Base.Claim(p);p.CharacterAdded:Connect(function(c)task.wait(.2);if c then c:PivotTo(CFrame.new(0,8,0))end end) end)
  game.Players.PlayerRemoving:Connect(function(p)Base.Release(p);Data.Remove(p)end)
- task.spawn(function()while true do task.wait(1);for _,p in ipairs(game.Players:GetPlayers())do local d=Data.Get(p);if d then local income=0;for _,id in ipairs(d.Owned)do local e=Config.Catalogue[id];if e then income+=e.Income end end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;local earned=math.floor(income*(1+d.Rebirths*.25)*boost*(Events and Events.GetIncomeMultiplier() or 1));Coin.Add(p,earned);if d.GemUpgrades and d.GemUpgrades.AutoCollect then d.AutoCollectTimer=(d.AutoCollectTimer or 0)+1;if d.AutoCollectTimer>=5 then d.AutoCollectTimer=0;Coin.Add(p,earned*5)end end;Remotes.State:FireClient(p,state(p))end end end end)
+ task.spawn(function()
+  while true do
+   local multiplier=Events and Events.GetIncomeMultiplier() or 1
+   local interval=multiplier>1 and .5 or 1
+   task.wait(interval)
+   for _,p in ipairs(game.Players:GetPlayers()) do
+    local d=Data.Get(p)
+    if d then
+     local income=0
+     for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then income+=e.Income end end
+     local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1
+     local rate=income*(1+d.Rebirths*.25)*boost*(Events and Events.GetIncomeMultiplier() or 1)
+     d.PassiveIncomeFraction=(d.PassiveIncomeFraction or 0)+math.floor(rate)*interval
+     local earned=math.floor(d.PassiveIncomeFraction)
+     d.PassiveIncomeFraction-=earned
+     if earned>0 then Coin.Add(p,earned) end
+     if d.GemUpgrades and d.GemUpgrades.AutoCollect then
+      d.AutoCollectTimer=(d.AutoCollectTimer or 0)+interval
+      if d.AutoCollectTimer>=5 then d.AutoCollectTimer-=5;Coin.Add(p,math.floor(rate)*5) end
+     end
+     Remotes.State:FireClient(p,state(p))
+    end
+   end
+  end
+ end)
  game:BindToClose(function()for _,p in ipairs(game.Players:GetPlayers())do Data.Save(p)end end)
 end
