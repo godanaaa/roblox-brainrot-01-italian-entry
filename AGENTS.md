@@ -1,38 +1,26 @@
-# Session 13 rollout — audit and verified fixes
+# Session 14 rollout — world and game-feel quality pass
 
-## Findings
+## What changed
 
-- Before edits, `/home/hatch/workspace/bin/rojo build default.project.json --output /tmp/session13-rebuild.rbxl` was byte-identical to the committed `game.rbxl` at `636da06`. This ruled out a stale committed place or Rojo mapping omission. The final rebuilt file differs because it includes this session's changes.
-- Roblox binary place files compress script source, so raw byte searching their `.rbxl` output does not find all markers. I checked a Rojo XML place build of the same project: `ArrivalPlatform`, `TravelPad`, `WorldEventBanner`, `FrontLeft`, `PalmTrunk`, and `RefreshMarketPrices` are present. The matching source/artifact names are `RollingHill` (not `RollingGreenHill`) and `DisplayPad` (not `DisplayPlatform`). The features are included; those two example marker spellings do not match the implementation names.
-- The first event delay in `src/server/Services/EventService.luau:14` was 180 seconds, making the banner easy to miss in a short Studio playtest. The first event now starts after 25 seconds; later cycles still wait 180 seconds and stay active for 75 seconds.
-- `src/server/Services/ShopService.luau:72-91` returned `false` silently when player data was missing, a listing was invalid, a zone offer was unavailable, storage was full, or the player lacked cash. These paths now send a visible purchase-failure notification; invalid item IDs also emit an `[IBW]` warning. Server-side validation and purchase authority remain in place.
+- `src/server/Services/MapBuilder.luau:75-93,95-101` adds original, Part-built landmarks around existing zone anchors: Starter City clock tower, Italian Village bell arch, Neon City crown skyline, Luxury District fountain, a volcanic summit and glowing lava crown, Sky Islands cloud cluster, and Secret Dimension rift. The existing volcano rim/lava lake and forge remain; existing floating islands remain. Existing district positions, arrival platforms, travel pads, and stall anchors were not moved.
+- `src/server/Services/BrainrotService.luau:106-132` gives each catalogue design one of eight additional readable props (pizza, espresso, flag, music notes, pocket book, lantern, orbiting orb, or daisy), layered over its existing face, silhouette, rarity trim, accessory, and wardrobe. The catalogue and rarity colors were not edited.
+- `src/server/Services/BaseService.luau:86-88,92-105` gives collect and upgrade interactions immediate visible results, expands display labels, and adds a rarity-colored plaque naming each Brainrot and its income above glowing display pads. Existing house palette, plot layout, doorway, porch, and fence remain in place.
+- `src/server/init.server.luau:61-85` updates player income state twice as often while income events are active and carries fractional payouts, retaining configured income multipliers. Auto-collect still triggers on its five-second timer.
+- `src/server/Services/ShopService.luau:42-51` puts the discounted amount and `SALE` / `% OFF` directly on the physical marketplace listing during Brainrot Rain.
+- `src/client/MenuController.luau:6` updates the title screen marker to **BUILD 14 • 19 NOV 2026**.
 
-## Verified paths and unchanged requirements
+## Preserved systems and values
 
-- `src/server/init.server.luau:12` still waits for `Services`. Safe requires and initialization report `[IBW]` results; `Map.Build` runs before `Base.Init`, then shop, travel, vehicles, premium, events, and leaderboard services initialize. Play is installed before map building and claims a base before moving the player to spawn.
-- Map district guards at `src/server/Services/MapBuilder.luau:11-13` log both success and full traceback on failure. Landscape, zones, and travel pads are created inside named districts. Arrival platforms meet the ground surface; travel pads sit above it.
-- `Base.Claim` calls `Base.Rebuild` for a fresh player (`src/server/Services/BaseService.luau:39-46`); failures warn with traceback. The front wall leaves a 9-stud gap (`:65-68`), the porch is outside it (`:81`), and the collect pad is offset to the left (`:85`). The fence opening is centered at the yard entrance. No confirmed doorway blocker was found.
-- Event delivery and rendering are connected through `EventService` and `EffectsController`; the banner is positioned below the top HUD. Rain pricing is recalculated at event start/end and applied in `ShopService.marketPrice` at buy time.
-- DataStore access/load/save failures already warn and use memory fallback (`DataService.luau:2-8`). Zone gate numbers, travel handling, map districts, Play, and income logic were not changed. No confirmed startup crash or swallowed district error was found.
+Session 13’s 25-second first event delay and visible failed-purchase reasons remain in `src/server/Services/EventService.luau:14` and `src/server/Services/ShopService.luau:72-91`. Zone requirements, catalogue prices/incomes, stall multipliers, quest rewards, gem costs, travel destinations, Play startup flow, and base placement were not edited. No external assets or sounds were added. Money and purchases remain server-authoritative.
 
-## Build marker and Studio checks
+## Verification
 
-`src/client/MenuController.luau:6` adds the only new UI element: **BUILD 13 • 19 NOV 2026**, centered along the bottom of the initial title menu.
+- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` completed successfully after the final edits.
+- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice. Both `out/dossier.json` files had SHA-256 `3df65e7cdfcf3207eb0170a22b3386fa0d1cb19f5beeea1e6c720d70b3f3a13e`. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
+- Fresh level-27 kit check verified 21 files. It exits 1 on `makefun check: git -C: spawnSync git EPERM`; this is the sandbox git probe, which the coordinator must rerun on the host. No other failed row was printed. `PLAY.json` remains the owner’s unpublished recording placeholder.
+- Static review confirms BUILD 14 marker, seven recognizable zone landmarks, distinct prop variation, readable rarity/name/income base displays, event-timed income updates and visible Brainrot Rain discounts. `src/shared/Config.luau` and the economy/gate values are unchanged. Startup, Play, travel, and zone gate handlers were not edited.
+- The owner should verify the rebuilt place in Studio before publishing. The coordinator runs the bundle dry-run on the host with session 14 added; sessions 1–13 passed their dry-runs.
 
-Ryan can confirm the build in this order:
+## Recording plan
 
-1. On launch, read `BUILD 13 • 19 NOV 2026` at the bottom of the title menu.
-2. Press Start Playing; within about 25 seconds, look for the timed event banner below the top HUD. It should show a name, description, countdown, and green progress bar.
-3. Open Map and inspect READY/LOCKED rows with cash, base level, and rebirth requirements. At a zone beacon, read its glowing pad and `TRAVEL • $X • LV n • REBIRTH n` prompt; locked attempts should show a LOCKED notification.
-4. Inspect the outer edge for rolling hills, palms, stones, and wildflowers. Walk the highway ramps and check they remain clear of wildflowers.
-5. Go to the first claimed base. Confirm its colored house has a porch and walk-through front doorway, then buy a Brainrot and confirm it appears on a glowing rarity-colored display pad.
-6. Try a marketplace purchase without enough cash and with full storage; each attempt should explain why it failed. During BRAINROT RAIN, confirm the displayed price and charged price are discounted.
-
-If any existing feature still appears absent, check Studio Output for `[IBW] Map district '<name>' failed at part/line:`, `[IBW] Base.Claim failed`, or the corresponding initialization warnings. A healthy startup reports completed initialization and built map districts. DataStore fallback is expected to print `[IBW] DataStore unavailable; using memory-only profiles: ...` or load/save failure warnings when Studio API access is unavailable.
-
-## Build and release recording
-
-- Required final build: `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` completed successfully. `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical after the second run. `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
-- The fresh level-27 kit check verified 21 files. Its git probe reports `spawnSync git EPERM` in this sandbox; the coordinator must rerun that check on the host. The play link remains at 0 seconds until Ryan publishes.
-- The coordinator runs the bundle dry-run on the host with session 13 added to the rollout list; sessions 1–12 passed their dry-runs.
-- Final recording comes after Ryan re-tests, publishes, and captures the playthrough. Then update `PLAY.json` and screenshots from the published build; do not record from an unverified local place.
+After Ryan re-tests and publishes this build, capture the final playthrough and screenshots from the published place, then update `PLAY.json` and `screenshots/`. At a glance, confirm the title marker; the clock tower, arch, neon skyline, fountain, volcano, cloud islands, and rift; Brainrots’ unique props; rarity-colored base pads with rarity/name/income labels; event banner and faster income updates; and the visible sale price during Brainrot Rain. Do not record from an unverified local place.
