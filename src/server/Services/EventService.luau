@@ -1,1 +1,24 @@
-local E={};function E.Init(remotes) local events={"MONEY RAIN! 2X CASH FOR EVERYONE","BRAINROT RAIN! MARKETPLACE BONUS","GOLDEN HOUR! 2X INCOME"};task.spawn(function()while true do task.wait(180);local msg=events[math.random(1,#events)];for _,p in ipairs(game.Players:GetPlayers()) do remotes.Notify:FireClient(p,"🌟 WORLD EVENT: "..msg,"EVENT") end end end) end;return E
+local E={Active=nil}
+local events={
+ {Name="GOLDEN HOUR",Description="2× passive income",Income=2},
+ {Name="BRAINROT RAIN",Description="25% off marketplace purchases",Discount=.25},
+ {Name="MEME RUSH",Description="2× passive income burst",Income=2},
+}
+function E.GetIncomeMultiplier() return E.Active and E.Active.Income or 1 end
+function E.GetDiscount() return E.Active and E.Active.Discount or 0 end
+function E.Init(remotes)
+ task.spawn(function()
+  local index=0
+  while true do
+   task.wait(180)
+   index=index%#events+1
+   local event=events[index];local finish=workspace:GetServerTimeNow()+75
+   E.Active=event
+   for _,p in ipairs(game.Players:GetPlayers()) do remotes.WorldEvent:FireClient(p,event.Name,event.Description,finish) end
+   task.wait(75)
+   E.Active=nil
+   for _,p in ipairs(game.Players:GetPlayers()) do remotes.WorldEvent:FireClient(p,"","",0) end
+  end
+ end)
+end
+return E

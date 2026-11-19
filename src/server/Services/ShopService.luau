@@ -3,6 +3,7 @@ local D=require(script.Parent.DataService)
 local Coin=require(script.Parent.CoinService)
 local Base=require(script.Parent.BaseService)
 local B=require(script.Parent.BrainrotService)
+local Events=require(script.Parent.EventService)
 local U=require(game.ReplicatedStorage.Modules.Util)
 local Shop={}
 local tiers={1,1.5,2,3,5,8,12}
@@ -16,6 +17,7 @@ local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
  local trim=Instance.new("Part");trim.Name="RarityGlow";trim.Size=Vector3.new(14.4,.3,14.4);trim.Position=stand.Position+Vector3.new(0,1.05,0);trim.Anchored=true;trim.CanCollide=false;trim.Color=stand.Color;trim.Material=Enum.Material.Neon;trim.Parent=parent
  B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0))
  local price=math.floor(e.Price*multiplier+.5)
+ if not zoneName then price=math.floor(price*(1-Events.GetDiscount())+.5) end
  if zoneName then U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end
  local actionText=(zoneName and (string.upper(zoneName).." ×"..multiplier.." • ") or "").."BUY  $"..price
  local objectText=e.Name.." • "..e.Rarity.." • +$"..e.Income.."/s"
