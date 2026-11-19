@@ -12,12 +12,16 @@ local offers={
  {"EPIC","LEGENDARY"},{"LEGENDARY","MYTHIC"},{"MYTHIC","SECRET"},{"SECRET","DIVINE"},
 }
 local function allowed(rarity,list) for _,v in ipairs(list) do if rarity==v then return true end end return false end
+local function marketPrice(e,multiplier)
+ local base=math.floor(e.Price*multiplier+.5)
+ return math.floor(base*(1-Events.GetDiscount())+.5)
+end
 local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
  local stand=Instance.new("Part");stand.Name=name;stand.Size=Vector3.new(14,2,14);stand.Position=position;stand.Anchored=true;stand.Color=C.Rarities[e.Rarity].Color;stand.Material=Enum.Material.Neon;stand.Parent=parent
  local trim=Instance.new("Part");trim.Name="RarityGlow";trim.Size=Vector3.new(14.4,.3,14.4);trim.Position=stand.Position+Vector3.new(0,1.05,0);trim.Anchored=true;trim.CanCollide=false;trim.Color=stand.Color;trim.Material=Enum.Material.Neon;trim.Parent=parent
  B.Create(parent,e,stand.Position+Vector3.new(0,2.6,0))
  local price=math.floor(e.Price*multiplier+.5)
- if not zoneName then price=math.floor(price*(1-Events.GetDiscount())+.5) end
+ if not zoneName then price=marketPrice(e,multiplier) end
  if zoneName then U.Label(stand,string.upper(zoneName).." ×"..multiplier.."\n"..e.Name.."  $"..price,Color3.new(1,1,1)) end
  local actionText=(zoneName and (string.upper(zoneName).." ×"..multiplier.." • ") or "").."BUY  $"..price
  local objectText=e.Name.." • "..e.Rarity.." • +$"..e.Income.."/s"
@@ -30,9 +34,23 @@ local function addStall(parent,e,position,name,zoneName,multiplier,remotes)
    objectText=objectText.." • Requires Base Lv "..requirement.Level.." + Rebirth "..requirement.Rebirths
   end
  end
- local prompt=Instance.new("ProximityPrompt");prompt.ActionText=actionText;prompt.ObjectText=objectText;prompt.HoldDuration=.4;prompt.MaxActivationDistance=12;prompt.Parent=stand
+ local prompt=Instance.new("ProximityPrompt");prompt.Name="PurchasePrompt";prompt.ActionText=actionText;prompt.ObjectText=objectText;prompt.HoldDuration=.4;prompt.MaxActivationDistance=12;prompt.Parent=stand
+ stand:SetAttribute("BasePrice",e.Price);stand:SetAttribute("PriceMultiplier",multiplier);stand:SetAttribute("ZonePurchase",zoneName~=nil)
  if zoneName then stand:SetAttribute("ZoneName",zoneName);stand:SetAttribute("BrainrotId",e.Id);stand:SetAttribute("PriceMultiplier",multiplier) end
  prompt.Triggered:Connect(function(p) Shop.Buy(p,e.Id,remotes,zoneName) end)
+end
+function Shop.RefreshMarketPrices()
+ local market=workspace:FindFirstChild("BrainrotMarketplace");if not market then return end
+ for _,stand in ipairs(market:GetChildren()) do
+  if stand:GetAttribute("ZonePurchase")~=true and stand:GetAttribute("BasePrice") then
+   local prompt=stand:FindFirstChild("PurchasePrompt");local id=tonumber(stand.Name:match("Display(%d+)"));local e=id and C.Catalogue[id]
+   if prompt and e then
+    local price=marketPrice(e,stand:GetAttribute("PriceMultiplier") or 1);prompt.ActionText="BUY  $"..price
+    local character=stand:FindFirstChild(e.Name);local gui=character and character:FindFirstChild("WorldLabel",true);local label=gui and gui:FindFirstChildOfClass("TextLabel")
+    if label then label.Text=e.Name.."\n"..e.Rarity.."  $"..price.."  +$"..e.Income.."/s" end
+   end
+  end
+ end
 end
 function Shop.Init(remotes)
  local market=workspace:FindFirstChild("BrainrotMarketplace");local floor=market and market:FindFirstChild("MarketFloor");if not floor then return end
@@ -64,6 +82,7 @@ function Shop.Buy(p,id,remotes,zoneName)
   multiplier=tiers[zoneIndex]
  end
  local price=math.floor(e.Price*multiplier+.5)
+ if not zoneName then price=marketPrice(e,multiplier) end
  local requiredZone=e.Rarity=="SECRET" and "Volcano" or e.Rarity=="DIVINE" and "Secret Dimension" or nil
  if requiredZone and not (d.UnlockedZones and d.UnlockedZones[requiredZone]) then local gate;for _,z in ipairs(C.Zones)do if z.Name==requiredZone then gate=z end end
   if gate then remotes.Notify:FireClient(p,"LOCKED • Unlock "..requiredZone.." first: $"..gate.Requirement..", Base Lv "..gate.Level..", Rebirth "..gate.Rebirths,"LOCKED") end;return false end
