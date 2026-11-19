@@ -1,22 +1,19 @@
-# Session 8 completion record — Italian Brainrot World
+# Session 9 — restore purchase audio pitch and market lock prompts
 
-Sessions 1–7 remain sealed at commit `89ca5fe`. Session 8 preserved the existing startup path, play flow, economy rules, travel gates, and district layout while adding the following changes:
+Session 9 restored two session-8 regressions in `src/server/Services/ShopService.luau`:
 
-## Built
-
-- Brainrots now use an original part-built chibi look: small varied bodies, larger heads, oversized eyes, a mouth, rarity-colored neon trim, and deterministic props selected from catalogue IDs. Props include antennae, crowns, glasses, wings, capes, tires, swords, sneakers, tutus, and shark fins. Existing per-ID palette, body shape, scale, purchase sound, and idle animation remain.
-- Four physical stalls were added in each of the seven zones. The central marketplace remains at catalogue price. Zone prices use strictly increasing multipliers: Starter City ×1, Italian Village ×1.5, Neon City ×2, Luxury District ×3, Volcano ×5, Sky Islands ×8, and Secret Dimension ×12. Each zone displays its name and multiplier on the stall and buy prompt. Zone rarity offers progress from COMMON–RARE in Starter City through SECRET–DIVINE in Secret Dimension.
-- Zone purchases calculate price from the server catalogue and configured multiplier. The server requires the zone to be unlocked, applies the existing SECRET/VOLCANO and DIVINE/SECRET DIMENSION restrictions, checks slots and funds, and records the purchase server-side.
-- The marketplace floor now spans z=320..900 (top y=3), supporting the rarity hall facades whose bases are at y=3 and whose z bounds are 825..895.
+- Successful purchases play the existing built-in `rbxasset://sounds/electronicpingshort.wav` at rarity-specific speeds (COMMON 1, UNCOMMON 1.08, RARE 1.16, EPIC 1.24, LEGENDARY 1.34, MYTHIC 1.45, SECRET 1.58, DIVINE 1.72). LEGENDARY and higher also play the same asset at ×1.22 speed, Volume .55, after 0.12 seconds. Both sound paths are protected by `pcall` and cleaned up with Debris after 4 seconds. Audio is triggered only after spending succeeds and the Brainrot is added.
+- SECRET and DIVINE market stalls show `VOLCANO LOCK` or `SECRET DIMENSION LOCK` and the configured Base Level and Rebirth requirements. Zone stalls retain their zone multiplier and buy prompt.
 
 ## Verification
 
-- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` completed successfully.
-- `MAKEFUN_OUTPUT_DIR=out node main.ts` ran twice; `out/dossier.json` was byte-identical. `out/` contains game.rbxl, PLAY.json, src/, screenshots/, and dossier.json.
-- Fresh level-27 kit check verified 21 files. The sandbox Git probe reports `spawnSync git EPERM`; rerun that probe on the coordinator host. PLAY.json remains unpublished, so Ryan completes the play link after publishing.
-- Static geometry audit confirmed four stalls in each zone, non-overlapping stall footprints, clearance from the zone district buildings and existing road grid, and ground/floor contact. Sky Islands stalls fit on the island at x=1027..1122, z=691..769. Hall floor bounds and bases were checked numerically.
-- No Studio playtest or screenshot capture was performed here. Startup, Play routing, and district architecture were not otherwise changed.
+- `/home/hatch/workspace/bin/rojo build default.project.json --output game.rbxl` succeeded after the final code edit.
+- `MAKEFUN_OUTPUT_DIR=out node main.ts` succeeded twice. `out/dossier.json` had matching SHA-256 `6bae877c778b70efe34d19934db08c2edf2416558ceb92c0fa7448be5c6ffa61`; `out/` contains `game.rbxl`, `PLAY.json`, `src/`, `screenshots/`, and `dossier.json`.
+- The fresh level-27 kit check verified 21 files and reported `spawnSync git EPERM` at its git probe. The coordinator should rerun this check where git access is available; the play link remains for the owner's publishing step.
+- No Studio playtest or publish was performed here.
+
+Only the purchase sound and market lock prompt logic changed. Startup, Play data, map, chibi models, zone stalls, and zone price tiers were left untouched.
 
 ## Final recording plan
 
-After Ryan re-tests and publishes: finalize PLAY.json with the live play link, capture fresh screenshots for the required recording, then have the coordinator include this session's rollout in the bundle dry-run. The coordinator runs that dry-run on the host; sessions 1–7 already passed theirs.
+After Ryan re-tests and publishes the build, capture the final gameplay screenshots and update `PLAY.json` with the published play link. The coordinator runs the bundle dry-run with this session's rollout added to the list; sessions 1–8 already passed their dry-runs.
