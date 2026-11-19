@@ -55,7 +55,39 @@ if Remotes then
 Remotes.UpgradeBase.OnServerInvoke=function(p) local d=Data.Get(p);if not d or d.BaseLevel>=6 then return false end;local nextL=d.BaseLevel+1;local cost=Config.Upgrades[nextL].Cost;if d.Cash<cost then return false end;d.Cash-=cost;d.BaseLevel=nextL;local plot=Base.Get(p);if plot then Base.Rebuild(plot,nextL,p) end;return true end
 Remotes.Collect.OnServerInvoke=function(p) local d=Data.Get(p);if not d then return 0 end;local total=0;for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then total+=e.Income end end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;total=math.floor(total*(1+d.Rebirths*.25)*boost*(Events and Events.GetIncomeMultiplier() or 1));Coin.Add(p,total*5);return total*5 end
 Remotes.Rebirth.OnServerInvoke=Rebirth.Try;Remotes.QuestClaim.OnServerInvoke=Quest.Claim;Remotes.BuyBrainrot.OnServerInvoke=function(p,id)return Shop.Buy(p,id,Remotes)end
-Remotes.Travel.OnServerInvoke=function(p,where) local d=Data.Get(p);if not d then d=Data.Load(p) end;if not d then Remotes.Notify:FireClient(p,"TRAVEL FAILED • Your player data is still loading. Try again shortly.","LOCKED");return false end;if not p.Character then Remotes.Notify:FireClient(p,"TRAVEL FAILED • Character is not ready yet. Try again.","LOCKED");return false end;if where=="Home" then local plot=Base.Get(p);if plot then p.Character:PivotTo(CFrame.new(plot.Position+Vector3.new(0,8,0)));return true end;Remotes.Notify:FireClient(p,"HOME UNAVAILABLE • Your base is not ready yet.","LOCKED");return false end;for _,zone in ipairs(Config.Zones)do if zone.Name==where then if d.Cash<zone.Requirement or d.BaseLevel<(zone.Level or 1) or d.Rebirths<(zone.Rebirths or 0) then Remotes.Notify:FireClient(p,string.format("LOCKED • Requires $%s, Base Lv %d, Rebirth %d",tostring(zone.Requirement),zone.Level,zone.Rebirths),"LOCKED");return false end;d.UnlockedZones[where]=true;local destination=zone.Position;if where=="Volcano" then destination+=Vector3.new(0,0,-75) elseif where=="Secret Dimension" then destination+=Vector3.new(0,0,-25) end;p.Character:PivotTo(CFrame.new(destination+Vector3.new(0,8,0)));return true end end;if where=="Market" then p.Character:PivotTo(CFrame.new(0,12,300));return true end;return false end
+local function travelFailure(p,message,reason)
+ warn("[IBW] Travel refused for "..p.Name.." to "..tostring(reason)..": "..message)
+ Remotes.Notify:FireClient(p,message,"LOCKED")
+ return false
+end
+Remotes.Travel.OnServerInvoke=function(p,where)
+ local ok,result=pcall(function()
+  local d=Data.Get(p);if not d then d=Data.Load(p) end
+  if not d then return travelFailure(p,"TRAVEL FAILED • Your player data is still loading. Try again shortly.",where) end
+  local character=p.Character
+  if not character or not character.Parent then return travelFailure(p,"TRAVEL FAILED • Character is not ready yet. Try again.",where) end
+  if where=="Home" then
+   local plot=Base.Get(p)
+   if not plot then return travelFailure(p,"HOME UNAVAILABLE • Your base is not ready yet.",where) end
+   character:PivotTo(CFrame.new(plot.Position+Vector3.new(0,8,0)));return true
+  end
+  for _,zone in ipairs(Config.Zones) do
+   if zone.Name==where then
+    if d.Cash<zone.Requirement or d.BaseLevel<(zone.Level or 1) or d.Rebirths<(zone.Rebirths or 0) then
+     return travelFailure(p,string.format("LOCKED • Requires $%s, Base Lv %d, Rebirth %d",tostring(zone.Requirement),zone.Level,zone.Rebirths),where)
+    end
+    d.UnlockedZones[where]=true
+    local destination=zone.Position
+    if where=="Volcano" then destination+=Vector3.new(0,0,-75) elseif where=="Secret Dimension" then destination+=Vector3.new(0,0,-25) end
+    character:PivotTo(CFrame.new(destination+Vector3.new(0,8,0)));return true
+   end
+  end
+  if where=="Market" then character:PivotTo(CFrame.new(0,12,300));return true end
+  return travelFailure(p,"TRAVEL FAILED • Unknown destination. Reopen the Map and choose a listed zone.",where)
+ end)
+ if not ok then return travelFailure(p,"TRAVEL FAILED • The destination could not be reached. Try again.",tostring(where).." / "..tostring(result)) end
+ return result
+end
  game.Players.PlayerAdded:Connect(function(p) Data.Load(p);Base.Claim(p);p.CharacterAdded:Connect(function(c)task.wait(.2);if c then c:PivotTo(CFrame.new(0,8,0))end end) end)
  game.Players.PlayerRemoving:Connect(function(p)Base.Release(p);Data.Remove(p)end)
  task.spawn(function()
