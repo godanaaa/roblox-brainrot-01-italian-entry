@@ -3,11 +3,27 @@ local Base=require(script.Parent.BaseService)
 local C=require(game.ReplicatedStorage.Modules.Config)
 local Game={}
 function Game.Init(remotes)
+ local function connectTravel(prompt,target)
+  prompt.Triggered:Connect(function(player)
+   local destination=target
+   if destination=="City" then destination="Starter City" end
+   local callback=remotes.Travel and remotes.Travel.OnServerInvoke
+   if not callback then
+    warn("[IBW] Travel prompt has no authoritative handler for "..tostring(destination))
+    remotes.Notify:FireClient(player,"TRAVEL FAILED • Travel service is not ready. Try again.","LOCKED")
+    return
+   end
+   local ok,result=pcall(callback,player,destination)
+   if not ok then
+    warn("[IBW] Travel prompt failed for "..player.Name.." to "..tostring(destination)..": "..tostring(result))
+    remotes.Notify:FireClient(player,"TRAVEL FAILED • The destination could not be reached. Try again.","LOCKED")
+   end
+  end)
+ end
  for _,obj in ipairs(workspace:GetDescendants()) do
-  if obj:IsA("ProximityPrompt") and obj.Parent:GetAttribute("TravelTarget") then
-   obj.Triggered:Connect(function(p)local target=obj.Parent:GetAttribute("TravelTarget");if not p.Character then return end;if target=="Market" then p.Character:PivotTo(CFrame.new(0,12,300)) else p.Character:PivotTo(CFrame.new(0,12,0)) end end)
-  elseif obj:IsA("ProximityPrompt") and obj.Parent:GetAttribute("ZoneName") then
-   obj.Triggered:Connect(function(p)local name=obj.Parent:GetAttribute("ZoneName");local d=D.Get(p);if not d then return end;for _,z in ipairs(C.Zones)do if z.Name==name then if d.Cash<z.Requirement or d.BaseLevel<(z.Level or 1) or d.Rebirths<(z.Rebirths or 0) then remotes.Notify:FireClient(p,"LOCKED • Requires $"..z.Requirement..", Base Lv "..z.Level..", Rebirth "..z.Rebirths,"LOCKED");return end;d.UnlockedZones[name]=true;if p.Character then p.Character:PivotTo(CFrame.new(z.Position+Vector3.new(0,8,0)))end end end end)
+  if obj:IsA("ProximityPrompt") then
+   local target=obj.Parent:GetAttribute("ZoneName") or obj.Parent:GetAttribute("TravelTarget")
+   if target then connectTravel(obj,target) end
   end
  end
  -- Play is installed once by init.server after every service is loaded, so the
