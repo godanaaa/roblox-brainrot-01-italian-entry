@@ -39,6 +39,30 @@ function Map.Build()
  U.Part(root,"Lake",Vector3.new(390,3,310),Vector3.new(800,-1,-750),Color3.fromRGB(55,190,235),Enum.Material.Glass)
  U.Part(root,"Beach",Vector3.new(420,3,90),Vector3.new(800,1,-560),Color3.fromRGB(255,219,140),Enum.Material.Sand)
  for i=1,10 do local x=-1000+i*90;local z=500+math.sin(i)*60;local hill=U.Part(root,"Hill",Vector3.new(140,80,130),Vector3.new(x,32,z),Color3.fromRGB(74,170,94),Enum.Material.Grass);hill.Shape=Enum.PartType.Ball end
+ -- Rounded outer-belt terrain keeps the roads, travel pads, stalls, and plots level.
+ local hills={}
+ for _,side in ipairs({-1,1}) do for _,xAbs in ipairs({1182,1228}) do for _,z in ipairs({270,470,670,870}) do
+  local x=side*xAbs;local hill=U.Part(root,"RollingHill",Vector3.new(94,58,92),Vector3.new(x,27,z),Color3.fromRGB(75+(z%3)*4,174,96),Enum.Material.Grass);hill.Shape=Enum.PartType.Ball
+  hills[#hills+1]={x=x,z=z,rx=47,rz=46}
+ end end end
+ -- Four decorative rings per side, with ramp positions filtered explicitly.
+ local palmCount=0
+ for _,side in ipairs({-1,1}) do for _,xAbs in ipairs({940,1060}) do for _,z in ipairs({250,470,690,910}) do
+  local x=side*xAbs;local onRamp=math.abs(x)>=1084 and math.abs(x)<=1116
+  if not onRamp then
+   palmCount+=1;local trunk=U.Part(root,"PalmTrunk",Vector3.new(5,24,5),Vector3.new(x,12,z),Color3.fromRGB(137,91,52),Enum.Material.Wood);trunk.Shape=Enum.PartType.Cylinder
+   local crown=U.Part(root,"PalmCrown",Vector3.new(18,12,18),Vector3.new(x,26,z),Color3.fromRGB(53,177,105),Enum.Material.Grass);crown.Shape=Enum.PartType.Ball
+   for leaf=1,4 do local angle=leaf*math.pi/2;local frond=U.Part(root,"PalmFrond",Vector3.new(20,1.3,4),Vector3.new(x+math.cos(angle)*6,29,z+math.sin(angle)*6),Color3.fromRGB(70,198,112),Enum.Material.Grass);frond.CFrame=CFrame.new(frond.Position)*CFrame.Angles(0,-angle,math.rad(-12)) end
+  end
+ end end end
+ local stoneCount=0
+ for _,x in ipairs({-1020,-940,940,1020}) do for _,z in ipairs({270,470,670,870}) do
+  local clear=true
+  for _,hill in ipairs(hills) do local value=((x-hill.x)/hill.rx)^2+((z-hill.z)/hill.rz)^2;if value<=1 then clear=false;break end end
+  if clear then stoneCount+=1;local stone=U.Part(root,"GardenStone",Vector3.new(8,6,7),Vector3.new(x,3,z),Color3.fromRGB(145,151,133),Enum.Material.Rock);stone.Shape=Enum.PartType.Ball end
+ end end
+ for i=1,48 do local x=-1270+(i%12)*42;local z=330+math.floor(i/12)*145;local flower=U.Part(root,"Wildflower",Vector3.new(3,3,3),Vector3.new(x,1.5,z),Color3.fromHSV((i*.13)%1,.7,1),Enum.Material.Neon);flower.Shape=Enum.PartType.Ball end
+ warn("[IBW] Outer landscape: "..#hills.." rolling hills, "..palmCount.." palms, "..stoneCount.." clear stones, 48 wildflowers")
  for i=1,80 do local x=-1050+(i%10)*70;local z=640+math.floor(i/10)*60;local trunk=U.Part(root,"TreeTrunk",Vector3.new(5,16,5),Vector3.new(x,8,z),Color3.fromRGB(120,76,40),Enum.Material.Wood);local crown=U.Part(root,"TreeCrown",Vector3.new(21,24,21),Vector3.new(x,24,z),Color3.fromRGB((i%2==0) and 50 or 40,190,(i%3)*35),Enum.Material.Grass);crown.Shape=Enum.PartType.Ball end
  for i=1,12 do local x=-1100+i*100;local m=U.Part(root,"Mountain",Vector3.new(170,190,170),Vector3.new(x,85,-1030),Color3.fromRGB(112,130,150),Enum.Material.Rock);m.Shape=Enum.PartType.Ball end
  end)
