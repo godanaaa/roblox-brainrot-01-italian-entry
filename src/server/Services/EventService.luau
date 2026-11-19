@@ -11,7 +11,8 @@ function E.Init(remotes)
  task.spawn(function()
   local index=0
   while true do
-   task.wait(180)
+   -- Give a fresh Studio session time to see one event; later cycles retain the 180s rest.
+   task.wait(index==0 and 25 or 180)
    index=index%#events+1
    local event=events[index];local finish=workspace:GetServerTimeNow()+75
    E.Active=event

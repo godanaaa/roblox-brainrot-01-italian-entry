@@ -69,7 +69,7 @@ function Shop.Init(remotes)
  end
 end
 function Shop.Buy(p,id,remotes,zoneName)
- local d=D.Get(p);local e=C.Catalogue[id];if not d or not e or id>100 then return false end
+ local d=D.Get(p);local e=C.Catalogue[id];if not d then remotes.Notify:FireClient(p,"PURCHASE FAILED • Player data is still loading. Try again shortly.","LOCKED");return false end;if not e or id>100 then warn("[IBW] Rejected invalid marketplace item from "..p.Name..": "..tostring(id));remotes.Notify:FireClient(p,"PURCHASE FAILED • This listing is unavailable.","LOCKED");return false end
  local multiplier=1
  if zoneName then
   local zoneIndex,zone
@@ -78,7 +78,7 @@ function Shop.Buy(p,id,remotes,zoneName)
    if zone then remotes.Notify:FireClient(p,"LOCKED • Unlock "..zoneName.." first: $"..zone.Requirement..", Base Lv "..zone.Level..", Rebirth "..zone.Rebirths,"LOCKED") end
    return false
   end
-  if not allowed(e.Rarity,offers[zoneIndex]) then return false end
+  if not allowed(e.Rarity,offers[zoneIndex]) then remotes.Notify:FireClient(p,"PURCHASE FAILED • This Brainrot is not offered in this zone.","LOCKED");return false end
   multiplier=tiers[zoneIndex]
  end
  local price=math.floor(e.Price*multiplier+.5)
@@ -87,7 +87,8 @@ function Shop.Buy(p,id,remotes,zoneName)
  if requiredZone and not (d.UnlockedZones and d.UnlockedZones[requiredZone]) then local gate;for _,z in ipairs(C.Zones)do if z.Name==requiredZone then gate=z end end
   if gate then remotes.Notify:FireClient(p,"LOCKED • Unlock "..requiredZone.." first: $"..gate.Requirement..", Base Lv "..gate.Level..", Rebirth "..gate.Rebirths,"LOCKED") end;return false end
  local slots=C.Upgrades[d.BaseLevel].Slots+((d.GemUpgrades and d.GemUpgrades.BaseSlots) and 5 or 0)
- if #d.Owned>=slots or not Coin.TrySpend(p,price) then return false end
+ if #d.Owned>=slots then remotes.Notify:FireClient(p,"PURCHASE FAILED • Your Brainrot storage is full. Upgrade your base or storage.","LOCKED");return false end
+ if not Coin.TrySpend(p,price) then remotes.Notify:FireClient(p,"PURCHASE FAILED • You need $"..price.." for this Brainrot.","LOCKED");return false end
  table.insert(d.Owned,id);d.Discovered[id]=true;local plot=Base.Get(p);if plot then Base.Rebuild(plot,d.BaseLevel,p) end
  local stall=zoneName and workspace:FindFirstChild("ZoneBrainrotStalls") or workspace:FindFirstChild("BrainrotMarketplace")
  local soundParent
