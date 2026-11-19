@@ -78,7 +78,11 @@ Remotes.Travel.OnServerInvoke=function(p,where)
     end
     d.UnlockedZones[where]=true
     local destination=zone.Position
-    if where=="Volcano" then destination+=Vector3.new(0,0,-75) elseif where=="Secret Dimension" then destination+=Vector3.new(0,0,-25) end
+    -- Volcano lands on its anchor: the VolcanoAnchorLanding (42x38, top y=-1)
+    -- is the solid floor there and the rim is visual-only (CanCollide off),
+    -- so no detour is needed. Secret Dimension keeps its -25z shift so the
+    -- arrival stays off the z=1100 ground-tile edge.
+    if where=="Secret Dimension" then destination+=Vector3.new(0,0,-25) end
     character:PivotTo(CFrame.new(destination+Vector3.new(0,8,0)));return true
    end
   end
