@@ -1,135 +1,98 @@
-# AGENTS.md — ITALIAN BRAINROT WORLD, session 24 (build): A HOME BASE FOR EVERY CHARACTER THAT JOINS
+# AGENTS.md — ITALIAN BRAINROT WORLD, session 25 (FINAL, recorded): PLAY.json + SCREENSHOTS
 
 ## Login / network (READ FIRST)
 - There is NO network in the sandbox and NO login step here. Do NOT try to
   log in, connect, or run any `makefun login` command. The coordinator owns
-  login, commit, push, bundle and submit; your job is ONLY the code below.
+  login, commit, push, bundle and submit; your job is ONLY the work below.
 - You are writing directly (Muse-app harness). Codex hit its usage limit
   and is BLOCKED until 16 Dec 2026 — do NOT use Codex. Write the code with
   your own file tools. Do NOT start any `makefun record` command — the
   record tool is ALREADY RUNNING on the host (recording began BEFORE your
   session, so everything you write is witnessed). Do NOT seal, commit,
-  push, or submit. Do NOT touch PLAY.json or screenshots/.
+  push, or submit.
+- Do NOT start this session until the coordinator says Ryan has published
+  the game to a NEW Roblox place and sent 3–4 screenshots. The play link
+  and the screenshots come from Ryan — never invent them, never fake a
+  capture.
 
 ## Repo facts
 - Repo: /home/hatch/workspace/roblox-brainrot-01-italian-entry (git HEAD
-  = session 23 commit, BUILD 23, clean tree except untracked out/).
+  = session 24 commit, BUILD 24, clean tree except untracked out/).
 - Counted files = `main.ts` + `src/**/*.luau` only. A counted file already
   in the repo with final content when this recording began fails
   `transcripts_witnessed` — so you MUST write (or revise) every counted
   file you touch inside this session. `vendor/makefun-roblox.ts` must stay
-  byte-identical. AGENTS.md is NOT counted — rewrite it yourself at the
-  end for session 25 (PLAY.json + screenshots, the final session).
+  byte-identical. AGENTS.md is NOT counted.
+- PLAY.json must be filled in DURING this recording (it is the last
+  missing check: play_link). Screenshots go in `screenshots/` — 3–4
+  files, ≤256 KiB each, first by name = cover. They MUST be the captures
+  Ryan sends from his Studio playtest of the published place — never
+  generate, copy, or reuse other images.
 - Verify with: `~/workspace/bin/rojo build default.project.json -o
   game.rbxl` (rebuild game.rbxl from source — never hand-edit it),
   `node main.ts` twice (dossier must be byte-identical; main.ts writes to
   $MAKEFUN_OUTPUT_DIR, default /output — set MAKEFUN_OUTPUT_DIR to a /tmp
   dir and sha the dossier there), and `node cli/makefun.mjs check --repo
   /home/hatch/workspace/roblox-brainrot-01-italian-entry --worktree` from
-  /home/hatch/workspace/roblox-brainrot-01-kit (expected: 4 passed, 1
-  failed = play_link only, 17 skipped).
-- Build marker: update `src/client/MenuController.luau` BuildMarker text
-  to "BUILD 24 • 20 NOV 2026".
+  /home/hatch/workspace/roblox-brainrot-01-kit (expected AFTER this
+  session: 5 passed, 0 failed, 17 skipped — play_link included).
+- Build marker: the marker stays at the last build's text
+  ("BUILD 24 • 20 NOV 2026" in `src/client/MenuController.luau`,
+  BuildMarker label). Do NOT bump it — this session adds no gameplay.
 
-## JOB — one change (Ryan's brief, 02:37 EAT 20 Nov)
-**A HOME BASE FOR EVERY CHARACTER THAT JOINS.** Every joining player
-automatically gets their own base (name sign, collect pad, upgrade
-station, garage, L1–L6 rebuilds). Currently only 8 base plots exist — fix
-assignment so no player is ever baseless: assign a free plot on join; if
-all plots are taken, add more plots or build additional plots
-dynamically; never share a plot between two players; a player's base
-persists across rejoins (same plot, owned brainrots still on display).
-Existing base layout + upgrade system unchanged. Keep everything from
-sessions 1–23. Do NOT change prices, incomes, rarity bands, zone
-multipliers, gates, or the admin system.
-- This is session 24, a BUILD session — the final session (PLAY.json +
-  screenshots) is session 25, after Ryan re-tests this one.
+## JOB — final session (Ryan's flow)
+1. Take the NEW place's play link from the coordinator (Ryan publishes
+   game.rbxl to a NEW Roblox place and puts the play code
+   `makefun-spatula-panorama-collar` in the place description) and fill
+   PLAY.json with it — universe id, place id, play link — exactly as the
+   kit expects (see the PLAY.json schema / main.ts: the kit check's
+   play_link must pass afterwards).
+2. Copy Ryan's 3–4 screenshots into `screenshots/` (≤256 KiB each;
+   first by name = cover). Verify each file's size; do not rename them
+   unless the coordinator says so.
+3. Rebuild game.rbxl with Rojo from the unchanged source (no gameplay
+   change this session) and run main.ts twice + the kit check.
+4. Report back: the PLAY.json contents, the screenshot file names +
+   sizes, rojo sha + size, dossier sha, kit check result (expect 5/0/17).
 
-## How bases work today (read BaseService.luau + DataService.luau first)
-- `Base.Init()` builds 8 plots at x=-700+(i-1)*180, z=900 (yards
-  150x120, x -700..560). `Base.Claim(player)` takes the FIRST free plot,
-  rebuilds it at L1 for that player and sets plot.Owner; if none is free
-  it warns "[IBW] Base.Claim found no available plot" and returns nil —
-  the player is BASELESS (no base, no collect pad, no garage).
-  `Base.Get(player)` finds a plot by Owner. `Base.Release(p)` frees the
-  plot and rebuilds it as an empty L1 house. `Base.Rebuild(plot, level,
-  player)` destroys everything except the Yard and rebuilds the house
-  (scales with level), fence, name sign (player DisplayName + "'S
-  BRAINROT EMPIRE"), collect pad, upgrade station, garage, home-travel
-  pad, and the owned brainrots on display pads (6 per row).
-- DataStore "IBW_Player_v1" persists Cash, Gems, Level, XP, Rebirths,
-  BaseLevel, Owned, Quests, TotalEarned, Discovered, Vehicles,
-  GemUpgrades, UnlockedZones. There is NO BasePlot field — plot
-  assignment is NOT persisted, so on rejoin Base.Claim assigns whatever
-  plot happens to be free first, which may differ from the player's
-  previous plot (the house rebuilds at their saved BaseLevel with their
-  saved Owned brainrots, but at a different plot).
-- Where extra plots can go: the row at z=900 extends east cleanly for
-  1–2 more plots (x=740, 920 — no trees, palms or hills inside those
-  yards), but further east runs into the RollingHills (x=1182/1228,
-  z 824..916) and the Sky zone airspace. Westward extension (x=-880)
-  puts a yard over the palm at (-940,910) and trees at (-910,940) /
-  (-840,940) — the session-12 precedent is to skip trees inside base
-  yards, so a dynamic builder must clear or avoid them the same way.
-  South of the row is the Secret slab (z 1000..1200, x -140..140) and
-  the south world-edge barriers — do NOT put plots there. Whatever you
-  build must not move the existing 8 plots, the zone slabs, the roads,
-  the markets, the pads, or the barriers.
-- Design notes: persist the plot assignment in the player profile
-  (e.g. d.BasePlot) so Claim prefers the player's own plot on rejoin;
-  make sure a freed plot (Release) can be re-claimed cleanly; a second
-  player joining while the first is still in-game must never be handed
-  the first player's plot. If you build plots dynamically, build the
-  full plot (yard + house at the player's saved BaseLevel + owned
-  brainrots on display) through the same Rebuild path, not a second
-  house builder.
-
-## Session 23 outcome (what you are building on — do NOT regress it)
-- BUILD 23 (recording 01a1f661): one change — a physical vehicle store,
-  nothing else touched (no price/income/rarity/gate/multiplier/admin
-  change; Config.luau untouched).
-- `src/server/Services/MapBuilder.luau` (new "showroom" district):
-  MOTORI SHOWROOM flush against the south face of the existing
-  Dealership (same 80-wide footprint, centre (-140,0,185), z
-  157.5..212.5), marble floor (top y=-0.9, flush with the roads), 12-tall
-  blue walls, dark slate roof with 1.5-stud overhang, big neon rooftop
-  sign "MOTORI SHOWROOM  •  VEHICLES" (label maxDist 150, readable from
-  the plaza), "ENTER" label on the lintel, 24-stud entrance gap in the
-  east wall (facing the plaza/spawn). Four display pads in a 2x2 grid
-  (Scooter (-160,172), Car (-120,172), Supercar (-160,198),
-  TralaleroMobile (-120,198)), each 16x2x20 in its Config colour with a
-  neon trim, a non-colliding sign board at its west edge ("NAME\n$PRICE",
-  150x40, 16 studs), and a buy prompt (E) created FIRST, before the
-  display model (same lesson as the stalls).
-- `src/server/Services/VehicleService.luau`: new
-  `Vehicles.BuildDisplayModel(v)` — same shape as makeVehicle (chassis
-  + seat + 4 wheels, same sizes/colours) but anchored and inert
-  (MaxSpeed/Torque 0), displayed facing the entrance (+X, yaw -90deg),
-  wheels touching the pad (body centre pad top + 2.2). Init wires each
-  pad's prompt to the SAME validation as the Vehicles menu
-  (Vehicles.Purchase: cash check, ownership saved to the profile);
-  already-owned → spawns the vehicle instead; every outcome is
-  notified visibly (bought / already owned + spawned / need $X /
-  data loading / unavailable). The Dealership facade prompt now reads
-  "MOTORI SHOWROOM" and points next door instead of "OPEN VEHICLE
-  GARAGE".
-- Prompts are named "PurchasePrompt", so the GameService travel scan
-  skips them (a buy press can never teleport the player), and their
-  parents carry no ZoneName/TravelTarget attribute. Prices are read
-  from Config.Vehicles (Scooter $1,500, Car $18,000, Supercar $180,000,
-  TralaleroMobile $350,000) — none invented. The Vehicles menu panel
-  is untouched and still works.
-- Verification (session 23): Rojo build clean — game.rbxl 82,719 bytes
-  (was 79,470), sha256
-  73439c82ce2389886a9873f0ce9ab115bdfbbff7c068c04b3efdeb934b7e0107;
+## Session 24 outcome (what you are building on — do NOT regress it)
+- BUILD 24 (recording 01a1f66d): one change — a home base for every
+  character that joins. No price/income/rarity/gate/multiplier/admin
+  change; Config.luau untouched.
+- `src/server/Services/DataService.luau`: `fresh()` gains `BasePlot=0`
+  (0 = no assigned plot). `Data.Load` backfills it for old profiles, and
+  `Data.Save`/`Data.Remove`/`BindToClose` persist it — plot assignment
+  now lives in the DataStore profile "IBW_Player_v1" like Cash and
+  BaseLevel.
+- `src/server/Services/BaseService.luau`: `Base.Init` now builds 10
+  static plots (1–8 unchanged at x=-700+(i-1)*180, z=900; 9 at x=740 and
+  10 at x=920 — both verified clear; plot 10's yard is cleared of the
+  palm at (940,910) + stone at (940,870)). New `Base.ClearYard(x,z)`
+  destroys small landscape items (TreeTrunk/TreeCrown/PalmTrunk/
+  PalmCrown/PalmFrond/GardenStone/Wildflower) inside a yard — the
+  session-12 precedent. New `Base.BuildPlot()` builds a plot dynamically
+  from `extraSlots` (11 slots: (-880,900); then a second row at z=1030:
+  500, 680, 860, 1040, 1220, -320, -500, -680, -860, -1040 — all
+  clearance-audited with 0 hill intrusions and 0 yard overlaps,
+  ~/workspace/s24-base-audit.py, kept for reuse). `Base.Claim(player)`
+  now: (1) prefers the player's persisted plot (same base across
+  rejoins, rebuilt at their saved BaseLevel with their owned brainrots
+  on display); (2) else first free plot; (3) else builds one dynamically.
+  Never shares a plot; never baseless while slots remain (10 static +
+  11 dynamic = 21 plots — beyond any realistic session; if all 21 are
+  taken Claim warns as before). Claim also rebuilds at the player's
+  saved BaseLevel now (was hardcoded L1; new players are L1 anyway).
+  Existing base layout + upgrade system unchanged. `Base.Release`
+  unchanged (frees the plot, rebuilds empty L1; the profile keeps
+  BasePlot so a rejoin reclaims it if still free).
+- Verification (session 24): Rojo build clean — game.rbxl 84,125 bytes
+  (was 82,719), sha256
+  199bb74b8b57b916c3ad3582230553ff5db983e59637ce1be64b9cea0f73789c;
   main.ts twice, exit 0, dossiers byte-identical, sha256
-  0df0c6acb46f17cf44f54575dad7279ef1592e06fc8265c1fb3e44d8602d6386
-  (189,861 bytes); kit check 4 passed, 1 failed (play_link only), 17
-  skipped. Block-balance check on MapBuilder.luau +
-  VehicleService.luau + MenuController.luau: balanced (finalDepth 0).
-  XML Rojo build confirms the showroom source is in the build
-  (MOTORI SHOWROOM, ShowroomWallNorth, ShowroomFloor, BuildDisplayModel,
-  VehicleId, ShowroomLintel, facade prompt text). No Luau parser exists
+  c80f6f001a98d2744a52afd026f5dc492d766f87929ca6528749f7c3aa397b09
+  (189,902 bytes); kit check 4 passed, 1 failed (play_link only), 17
+  skipped. Block-balance check on BaseService.luau + DataService.luau +
+  MenuController.luau: balanced (finalDepth 0). No Luau parser exists
   on this machine (only rojo in ~/workspace/bin; no network), so Ryan's
   Studio test is the runtime check.
 - Caveats carried forward: a player can still walk AROUND a zone barrier
@@ -143,7 +106,7 @@ multipliers, gates, or the admin system.
   overhang their stall stand / base pad slightly — visual only, all
   parts are CanCollide=false.
 
-## Sessions 1–22 carried forward (do NOT regress)
+## Sessions 1–23 carried forward (do NOT regress)
 - Distinct landscapes per zone (own 280x280 slab), chibi brainrot look
   (oversized eyes + shine + blush, all 100), early gates (Starter
   $0/Lv1/Reb0, Italian $100/Lv1/Reb0, Neon $1,000/Lv1/Reb0, Luxury
@@ -183,6 +146,12 @@ multipliers, gates, or the admin system.
   hop / waddle, faster for higher rarities). `face()` uses `curId`, a
   module-level variable that `B.Create` sets to the entry id before
   building — the signature builders do not take an id parameter.
+- Session 23 (do NOT regress): MOTORI SHOWROOM flush against the south
+  face of the Dealership (centre (-140,0,185)), four display pads
+  (Scooter $1,500, Car $18,000, Supercar $180,000, TralaleroMobile
+  $350,000) with E buy prompts wired to the same Vehicles.Purchase
+  validation as the menu; prompts named "PurchasePrompt" so the travel
+  scan skips them.
 - Key invariants (do NOT break): init.server line 12 is
   `local Services=script:WaitForChild("Services")` (the line-12 bug from
   session 6 — never reintroduce `script.Parent.Services`); zone stall
@@ -206,11 +175,6 @@ multipliers, gates, or the admin system.
   NOT on the platform.
 
 ## Report back when done
-What you changed per item (which files, how plot assignment works now,
-where extra plots go or how they are built dynamically, how a base
-persists across rejoins), and the verification results (rojo sha + size,
-dossier sha, kit check). Say plainly how Ryan confirms in Studio (join
-with a second test player if possible — or simulate joins — and confirm
-each player gets their own named base, no sharing; rejoin and confirm
-the same plot and the owned brainrots still on display). Quote any
-transcript/record warnings in full.
+The PLAY.json contents, the screenshot file names + sizes, rojo sha +
+size, dossier sha, kit check result. Quote any transcript/record
+warnings in full.
