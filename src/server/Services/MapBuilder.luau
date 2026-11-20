@@ -570,6 +570,68 @@ function Map.Build()
   local pad=U.Part(root,entry[1],Vector3.new(16,2,16),entry[2],entry[3],Enum.Material.Neon);local prompt=Instance.new("ProximityPrompt");prompt.ActionText="TRAVEL";prompt.ObjectText=entry[1];prompt.MaxActivationDistance=16;prompt.RequiresLineOfSight=false;prompt.Parent=pad;pad:SetAttribute("TravelTarget",entry[4])
  end
  end)
+ district("showroom",function()
+ -- Session 23: A PHYSICAL STORE TO BUY THE VEHICLES. The MOTORI
+ -- SHOWROOM sits flush against the south face of the existing Dealership
+ -- (same 80-wide footprint, centre (-140,0,185), z 157.5..212.5), so the
+ -- two read as one dealership complex next to Starter City, ~190 studs
+ -- from spawn. Enterable through a 24-stud gap in the east wall (facing
+ -- the plaza/spawn), with a big neon rooftop sign. Four display pads in
+ -- a 2x2 grid, one vehicle each, built from the same shape as the
+ -- drivable vehicles (VehicleService.BuildDisplayModel) and facing the
+ -- entrance (+X). Each pad has a name + price sign board and a buy
+ -- prompt (E) that reuses the existing vehicle validation (wired in
+ -- VehicleService.Init — the prompt is created FIRST, before the display
+ -- model, so a model failure never eats the prompt, same lesson as the
+ -- stalls). The prompts are named "PurchasePrompt", so the GameService
+ -- travel scan skips them (a buy press can never teleport the player),
+ -- and their parents carry no ZoneName/TravelTarget attribute.
+ -- Clearance: the showroom sits on open ground south of the Dealership
+ -- — clear of the x=-200 avenue (7 studs), the TrunkN road (x=0), the
+ -- TrunkW road (z=0), the Italian road (z=290), the Bazaar (z>=480),
+ -- the base plots (z>=840), the residences (z>=326) and every Starter
+ -- decoration (all inside the slab, z<=140). Nothing blocks a walking
+ -- path, a travel pad, or the starting-village market.
+ local showroom=model("VehicleShowroom");showroom.Parent=root
+ -- floor: flush inlay, top y=-0.9, same as the roads
+ U.Part(showroom,"ShowroomFloor",Vector3.new(80,1,55),Vector3.new(-140,-1.4,185),Color3.fromRGB(200,200,210),Enum.Material.Marble)
+ -- walls: 12 tall (y -1..11), blue like the Dealership
+ local function wall(name,size,pos) return U.Part(showroom,name,size,pos,Color3.fromRGB(70,190,255),Enum.Material.SmoothPlastic) end
+ wall("ShowroomWallNorth",Vector3.new(80,12,1),Vector3.new(-140,5,157.5))
+ wall("ShowroomWallSouth",Vector3.new(80,12,1),Vector3.new(-140,5,212.5))
+ wall("ShowroomWallWest",Vector3.new(1,12,55),Vector3.new(-180,5,185))
+ wall("ShowroomWallEastA",Vector3.new(1,12,15.5),Vector3.new(-100,5,165.25))
+ wall("ShowroomWallEastB",Vector3.new(1,12,15.5),Vector3.new(-100,5,204.75))
+ local lintel=wall("ShowroomLintel",Vector3.new(1,2,24),Vector3.new(-100,10,185))
+ U.Label(lintel,"ENTER",Color3.new(0.1,0.1,0.15))
+ -- roof: dark slate, 1.5-stud overhang like the other buildings
+ U.Part(showroom,"ShowroomRoof",Vector3.new(83,2,58),Vector3.new(-140,12,185),Color3.fromRGB(45,48,67),Enum.Material.Slate)
+ -- rooftop sign: big neon panel above the roof, readable from the plaza
+ local sign=U.Part(showroom,"ShowroomSign",Vector3.new(40,8,1),Vector3.new(-140,17,185),Color3.fromRGB(70,190,255),Enum.Material.Neon)
+ U.Label(sign,"MOTORI SHOWROOM  •  VEHICLES",Color3.new(1,1,1),190,48,150)
+ -- four display pads, 2x2, one vehicle each (prices from Config.Vehicles)
+ local Vehicle=require(script.Parent.VehicleService)
+ local pads={{Id="Scooter",X=-160,Z=172},{Id="Car",X=-120,Z=172},{Id="Supercar",X=-160,Z=198},{Id="TralaleroMobile",X=-120,Z=198}}
+ for _,pad in ipairs(pads) do
+  local v
+  for _,spec in ipairs(C.Vehicles) do if spec.Id==pad.Id then v=spec;break end end
+  if v then
+   local stand=U.Part(showroom,"VehiclePad_"..v.Id,Vector3.new(16,2,20),Vector3.new(pad.X,0,pad.Z),v.Color,Enum.Material.SmoothPlastic)
+   local trim=U.Part(showroom,"VehiclePadTrim_"..v.Id,Vector3.new(16.4,.3,20.4),Vector3.new(pad.X,1.05,pad.Z),v.Color,Enum.Material.Neon);trim.CanCollide=false
+   -- sign board at the pad's west edge: name + price, clear of the vehicle
+   local board=U.Part(showroom,"VehicleSign_"..v.Id,Vector3.new(1,5,14),Vector3.new(pad.X-8.5,3,pad.Z),Color3.fromRGB(45,48,67),Enum.Material.Slate);board.CanCollide=false
+   U.Label(board,v.Id.."\n$"..v.Price,Color3.new(1,1,1),150,40,16)
+   -- buy prompt FIRST, before the display model
+   local prompt=Instance.new("ProximityPrompt");prompt.Name="PurchasePrompt";prompt.ActionText="BUY  •  $"..v.Price;prompt.ObjectText=v.Id.."  •  Speed "..v.Speed;prompt.HoldDuration=.4;prompt.MaxActivationDistance=16;prompt.RequiresLineOfSight=false;prompt.KeyboardKeyCode=Enum.KeyCode.E;prompt:SetAttribute("VehicleId",v.Id);prompt.Parent=stand
+   local modelOk,modelErr=pcall(function()
+    local display=Vehicle.BuildDisplayModel(v)
+    display:PivotTo(CFrame.new(pad.X,3.2,pad.Z)*CFrame.Angles(0,math.rad(-90),0))
+    display.Parent=showroom
+   end)
+   if not modelOk then warn("[IBW] Showroom display model failed for "..v.Id.." (pad keeps its buy prompt): "..tostring(modelErr)) end
+  end
+ end
+ end)
  local descendants=#root:GetDescendants()
  local missing={}
  for _,required in ipairs({"WorldGround_-1_-1","WorldGround_-1_1","WorldGround_1_-1","WorldGround_1_1","SpawnPlaza","Avenue","HighwayRing_-1_1"}) do if not root:FindFirstChild(required,true) then table.insert(missing,required) end end
