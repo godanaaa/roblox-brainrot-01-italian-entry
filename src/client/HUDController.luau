@@ -5,6 +5,12 @@ function HUD.Init()
  local bar=Instance.new("Frame");bar.Size=UDim2.fromOffset(340,46);bar.Position=UDim2.fromOffset(12,12);bar.BackgroundColor3=Color3.fromRGB(24,27,45);bar.BackgroundTransparency=.12;bar.Parent=gui;Instance.new("UICorner",bar).CornerRadius=UDim.new(0,14)
  local text=Instance.new("TextLabel");text.Name="Stats";text.Size=UDim2.new(1,-20,1,0);text.Position=UDim2.fromOffset(10,0);text.BackgroundTransparency=1;text.Text="💰 $500     💎 0     ⭐ Lv 1     🔥 0";text.TextColor3=Color3.new(1,1,1);text.Font=Enum.Font.GothamBold;text.TextScaled=true;text.Parent=bar;capText(text,14)
  local menu=Instance.new("TextButton");menu.Size=UDim2.fromOffset(128,52);menu.Position=UDim2.fromOffset(12,66);menu.Text="MENU";menu.Font=Enum.Font.GothamBlack;menu.TextScaled=true;menu.BackgroundColor3=Color3.fromRGB(45,48,78);menu.TextColor3=Color3.new(1,1,1);menu.Parent=gui;capText(menu,17);Instance.new("UICorner",menu).CornerRadius=UDim.new(0,12)
+ -- Session 25: HOME shortcut — a direct teleport to the player's OWN base,
+ -- always reachable next to MENU (never buried in a submenu). It uses the
+ -- same Travel("Home") remote as the menu's Home item; the server claims
+ -- a plot first if the player somehow has none, and lands them in front
+ -- of their house, facing it. No unlocks or purchases needed.
+ local home=Instance.new("TextButton");home.Name="HomeButton";home.Size=UDim2.fromOffset(128,52);home.Position=UDim2.fromOffset(148,66);home.Text="HOME";home.Font=Enum.Font.GothamBlack;home.TextScaled=true;home.BackgroundColor3=Color3.fromRGB(55,220,145);home.TextColor3=Color3.fromRGB(15,45,40);home.Parent=gui;capText(home,17);Instance.new("UICorner",home).CornerRadius=UDim.new(0,12)
  local rem=game:GetService("ReplicatedStorage"):WaitForChild("Remotes");local state;local mapRows={}
  local function cashText(amount)return tostring(math.floor(amount or 0)):reverse():gsub("(%d%d%d)","%1,"):reverse():gsub("^,","")end
  rem.State.OnClientEvent:Connect(function(s)state=s;text.Text=string.format("💰 $%s   +$%s/s    💎 %s   ⭐ Lv %s   🔥 %s",tostring(s.Cash),tostring(s.Income),tostring(s.Gems),tostring(s.Level),tostring(s.Rebirths));for zone,b in pairs(mapRows)do local eligible=s.Cash>=zone.Requirement and s.BaseLevel>=zone.Level and s.Rebirths>=zone.Rebirths;local unlocked=s.UnlockedZones and s.UnlockedZones[zone.Name];b.Text="TRAVEL  •  "..zone.Name.."  •  "..((unlocked or eligible) and "READY" or "LOCKED").." $"..cashText(zone.Requirement).." / Lv "..zone.Level.." / Reb "..zone.Rebirths end end)
@@ -17,6 +23,7 @@ function HUD.Init()
   if scroll then list.CanvasSize=UDim2.new(0,0,0,#rows*48);list.ScrollBarThickness=8 end
   for i,row in ipairs(rows)do local b=Instance.new("TextButton");b.Size=UDim2.new(1,-6,0,42);b.Position=UDim2.fromOffset(3,(i-1)*47);b.Text=row.text;b.TextColor3=Color3.new(1,1,1);b.Font=Enum.Font.GothamBold;b.TextScaled=true;b.BackgroundColor3=Color3.fromRGB(58,65,100);b.Parent=list;capText(b,15);Instance.new("UICorner",b).CornerRadius=UDim.new(0,8);if row.zone then mapRows[row.zone]=b end;if row.click then b.Activated:Connect(row.click)else b.Active=false end end
  end
+ home.Activated:Connect(function() local ok,err=pcall(function() rem.Travel:InvokeServer("Home") end);if not ok then warn("[IBW] HOME request failed: "..tostring(err)) end end)
  menu.Activated:Connect(function()
   local old=gui:FindFirstChild("MenuPanel");if old then old:Destroy();return end
   local f=Instance.new("Frame");f.Name="MenuPanel";f.Size=UDim2.fromOffset(250,360);f.Position=UDim2.fromOffset(12,126);f.BackgroundColor3=Color3.fromRGB(25,28,50);f.Parent=gui;Instance.new("UICorner",f).CornerRadius=UDim.new(0,14)
