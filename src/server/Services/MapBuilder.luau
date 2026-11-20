@@ -274,7 +274,17 @@ function Map.Build()
  zoneBarrier("ZoneBarrier_Italian","Italian Village",Vector3.new(-700,5,308),Vector3.new(20,12,1),Vector3.new(0,0,-1))
  zoneBarrier("ZoneBarrier_Neon","Neon City",Vector3.new(560,5,-300),Vector3.new(1,12,20),Vector3.new(-1,0,0))
  zoneBarrier("ZoneBarrier_Luxury","Luxury District",Vector3.new(800,5,510),Vector3.new(20,12,1),Vector3.new(0,0,-1))
- zoneBarrier("ZoneBarrier_Volcano","Volcano",Vector3.new(-960,5,-800),Vector3.new(1,12,20),Vector3.new(1,0,0))
+ zoneBarrier("ZoneBarrier_Volcano","Volcano",Vector3.new(-960,5,-800),Vector3.new(1,12,20),Vector3.new(-1,0,0))
+ -- Session 25: Volcano's road enters through the slab's SOUTH edge
+ -- (-1000,-660) with no gate at all — the (-960,-800) gate sits on the
+ -- EAST edge, between the slab and the market, and its ApproachDir was
+ -- inverted (1,0,0), so the old sweep would have bounced a locked player
+ -- TOWARD the market. The east gate stays (approach fixed to -X: the
+ -- market is the zone side, the slab/road is the approach side), and the
+ -- real road gate is added here, on the road at the slab's south edge,
+ -- approach +Z (south, back toward the road). ZoneBarrierService also
+ -- enforces the Volcano box directly, so no entry path is left open.
+ zoneBarrier("ZoneBarrier_VolcanoEntry","Volcano",Vector3.new(-1000,5,-660),Vector3.new(20,12,1),Vector3.new(0,0,1))
  zoneBarrier("ZoneBarrier_Sky","Sky Islands",Vector3.new(1160,5,500),Vector3.new(20,12,1),Vector3.new(0,0,-1))
  zoneBarrier("ZoneBarrier_Secret","Secret Dimension",Vector3.new(140,5,1050),Vector3.new(1,12,20),Vector3.new(1,0,0))
  -- WORLD-EDGE BARRIERS: invisible walls around the whole world so a
