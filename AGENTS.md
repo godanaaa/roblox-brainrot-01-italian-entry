@@ -1,4 +1,4 @@
-# AGENTS.md — ITALIAN BRAINROT WORLD, session 25 (FINAL, recorded): PLAY.json + SCREENSHOTS
+# AGENTS.md — ITALIAN BRAINROT WORLD, session 26 (FINAL, recorded): PLAY.json + SCREENSHOTS
 
 ## Login / network (READ FIRST)
 - There is NO network in the sandbox and NO login step here. Do NOT try to
@@ -17,7 +17,7 @@
 
 ## Repo facts
 - Repo: /home/hatch/workspace/roblox-brainrot-01-italian-entry (git HEAD
-  = session 24 commit, BUILD 24, clean tree except untracked out/).
+  = session 25 commit, BUILD 25, clean tree except untracked out/).
 - Counted files = `main.ts` + `src/**/*.luau` only. A counted file already
   in the repo with final content when this recording began fails
   `transcripts_witnessed` — so you MUST write (or revise) every counted
@@ -37,7 +37,7 @@
   /home/hatch/workspace/roblox-brainrot-01-kit (expected AFTER this
   session: 5 passed, 0 failed, 17 skipped — play_link included).
 - Build marker: the marker stays at the last build's text
-  ("BUILD 24 • 20 NOV 2026" in `src/client/MenuController.luau`,
+  ("BUILD 25 • 20 NOV 2026" in `src/client/MenuController.luau`,
   BuildMarker label). Do NOT bump it — this session adds no gameplay.
 
 ## JOB — final session (Ryan's flow)
@@ -55,58 +55,66 @@
 4. Report back: the PLAY.json contents, the screenshot file names +
    sizes, rojo sha + size, dossier sha, kit check result (expect 5/0/17).
 
-## Session 24 outcome (what you are building on — do NOT regress it)
-- BUILD 24 (recording 01a1f66d): one change — a home base for every
-  character that joins. No price/income/rarity/gate/multiplier/admin
-  change; Config.luau untouched.
-- `src/server/Services/DataService.luau`: `fresh()` gains `BasePlot=0`
-  (0 = no assigned plot). `Data.Load` backfills it for old profiles, and
-  `Data.Save`/`Data.Remove`/`BindToClose` persist it — plot assignment
-  now lives in the DataStore profile "IBW_Player_v1" like Cash and
-  BaseLevel.
-- `src/server/Services/BaseService.luau`: `Base.Init` now builds 10
-  static plots (1–8 unchanged at x=-700+(i-1)*180, z=900; 9 at x=740 and
-  10 at x=920 — both verified clear; plot 10's yard is cleared of the
-  palm at (940,910) + stone at (940,870)). New `Base.ClearYard(x,z)`
-  destroys small landscape items (TreeTrunk/TreeCrown/PalmTrunk/
-  PalmCrown/PalmFrond/GardenStone/Wildflower) inside a yard — the
-  session-12 precedent. New `Base.BuildPlot()` builds a plot dynamically
-  from `extraSlots` (11 slots: (-880,900); then a second row at z=1030:
-  500, 680, 860, 1040, 1220, -320, -500, -680, -860, -1040 — all
-  clearance-audited with 0 hill intrusions and 0 yard overlaps,
-  ~/workspace/s24-base-audit.py, kept for reuse). `Base.Claim(player)`
-  now: (1) prefers the player's persisted plot (same base across
-  rejoins, rebuilt at their saved BaseLevel with their owned brainrots
-  on display); (2) else first free plot; (3) else builds one dynamically.
-  Never shares a plot; never baseless while slots remain (10 static +
-  11 dynamic = 21 plots — beyond any realistic session; if all 21 are
-  taken Claim warns as before). Claim also rebuilds at the player's
-  saved BaseLevel now (was hardcoded L1; new players are L1 anyway).
-  Existing base layout + upgrade system unchanged. `Base.Release`
-  unchanged (frees the plot, rebuilds empty L1; the profile keeps
-  BasePlot so a rejoin reclaims it if still free).
-- Verification (session 24): Rojo build clean — game.rbxl 84,125 bytes
-  (was 82,719), sha256
-  199bb74b8b57b916c3ad3582230553ff5db983e59637ce1be64b9cea0f73789c;
-  main.ts twice, exit 0, dossiers byte-identical, sha256
-  c80f6f001a98d2744a52afd026f5dc492d766f87929ca6528749f7c3aa397b09
-  (189,902 bytes); kit check 4 passed, 1 failed (play_link only), 17
-  skipped. Block-balance check on BaseService.luau + DataService.luau +
-  MenuController.luau: balanced (finalDepth 0). No Luau parser exists
-  on this machine (only rojo in ~/workspace/bin; no network), so Ryan's
-  Studio test is the runtime check.
-- Caveats carried forward: a player can still walk AROUND a zone barrier
-  on the grass beside the road (the barrier spans the road plus 2 studs
-  each side, not the whole 280-wide slab) — but they cannot buy from that
-  zone's stalls without UnlockedZones, and the Map travel gate still
-  applies. The session-19 caveat also stands: at viewports narrower than
-  ~900px the centred 620-wide event banner can briefly touch the left
-  MENU button during an event only; at normal widths (1455) no overlap.
-  Session-22 known cosmetic: the biggest (DIVINE 1.56×) brainrots
-  overhang their stall stand / base pad slightly — visual only, all
-  parts are CanCollide=false.
+## Session 25 outcome (what you are building on — do NOT regress it)
+- BUILD 25 (recording 01a1f827): three fixes, no price/income/rarity/
+  gate/multiplier/admin change; Config.luau untouched.
+- DEFECT 1 (zone barriers): root cause — the road gates were 20-stud
+  walls on open ground (each slab 280 wide), so players walked around
+  them on the grass; the 0.5s sweep could not catch a walk-around (its
+  catch window is a ~2.8-stud strip crossed in ~0.18s between ticks).
+  The markets sit OUTSIDE their slabs and Volcano's road entered through
+  its south edge with no gate (its east gate's ApproachDir was inverted,
+  bouncing locked players TOWARD the market). A perimeter fence was
+  rejected (different L-shaped slab+market regions per zone; the Sky ramp
+  can be boarded from the side). Fix in ZoneBarrierService.luau: per-zone
+  intrusion boxes (slab + market; the gate-side edge is 2 studs inside
+  the gate line so the gate touch zone is outside the box; Sky's box is
+  the island volume only, y 85..120) + a Heartbeat position sweep — a
+  player inside a box who never unlocked the zone is ejected to the
+  road-gate approach with LOCKED; a player who passes the live gate is
+  flagged in instead. MapBuilder.luau: new Volcano entry gate at
+  (-1000,5,-660) on the actual road, and the old Volcano gate's approach
+  flipped to (-1,0,0). Audit ~/workspace/s25-zone-audit.py: 0 failures
+  (anchors + markets inside their boxes, all 21 base plots + the Bazaar
+  outside all boxes, every road enters a box only at its gate). Leaving
+  is still always allowed; a player who unlocked a zone and then spent
+  below its gate is never ejected.
+- DEFECT 2 (vehicles): VehicleService.luau now has one shared builder
+  for driven + display models — real shaping, not a single box: Scooter
+  (step-through floor, handlebar, saddle, 2 in-line wheels); Car (hood,
+  cabin with glass windshield/side/rear windows, rear roof, bumpers,
+  grille, mirrors, headlights/taillights, 4 round wheels with hubcaps);
+  Supercar (low wedge nose, roadster cabin, spoiler, side skirts, neon
+  underglow, slim headlights, full-width taillight bar, gold-rimmed
+  wheels); TralaleroMobile (shark snout, toothy grin, shark eyes, dorsal
+  + tail fins, gold band, white sneaker rims). Wheels are true round
+  discs (Size (diameter, thickness, diameter) rotated 90deg about Z;
+  the old (2,2,1) wheels were elliptical). Wheel bottoms at y=-2.2, so
+  displays rest on the pads and driven spawns settle on the ground.
+  Prices, purchase validation and spawn behaviour unchanged.
+- HOME button: HUDController.luau has a green HOME button next to MENU
+  (148,66, same 128x52 size) that calls Travel("Home"); init.server
+  Travel("Home") now claims a plot first if the player has none, and
+  lands them on the yard in front of their house (14 studs in front of
+  the porch, depth grows with BaseLevel), facing the house (+Z) — the
+  old landing was the plot centre, inside the house. The menu's Home
+  item is unchanged (same remote).
+- Verification (session 25): Rojo build clean; main.ts twice, dossiers
+  byte-identical; kit check 4 passed, 1 failed (play_link only), 17
+  skipped. Block-balance check on the changed files: balanced
+  (finalDepth 0). No Luau parser exists on this machine (only rojo in
+  ~/workspace/bin; no network), so Ryan's Studio test is the runtime
+  check.
+- Caveats carried forward: the session-19 caveat stands (at viewports
+  narrower than ~900px the centred 620-wide event banner can briefly
+  touch the left MENU button during an event only; at normal widths
+  (1455) no overlap). Session-22 known cosmetic: the biggest (DIVINE
+  1.56×) brainrots overhang their stall stand / base pad slightly —
+  visual only, all parts are CanCollide=false. Honest cap: 21 concurrent
+  plots; a 22nd simultaneous player would be baseless (warns as
+  before) — beyond any realistic session for this entry.
 
-## Sessions 1–23 carried forward (do NOT regress)
+## Sessions 1–24 carried forward (do NOT regress)
 - Distinct landscapes per zone (own 280x280 slab), chibi brainrot look
   (oversized eyes + shine + blush, all 100), early gates (Starter
   $0/Lv1/Reb0, Italian $100/Lv1/Reb0, Neon $1,000/Lv1/Reb0, Luxury
@@ -131,7 +139,8 @@
   trimmed at the north end to 280x420); walkable routes (21 gold-edged
   cobble road legs + Sky ramp + 7 signposts) with 6 invisible zone
   barriers + 8 world-edge barriers, enforced by ZoneBarrierService.luau
-  with the same live gate as Map travel.
+  with the same live gate as Map travel (session 25 added the intrusion
+  sweep + the Volcano entry gate).
 - Session 21 (do NOT regress): smooth themed decorations for all 7 zones
   (~160 parts, rounded shapes only) via the `dec()` helper in
   MapBuilder.luau, clearance-audited with 0 overlaps
@@ -151,7 +160,12 @@
   (Scooter $1,500, Car $18,000, Supercar $180,000, TralaleroMobile
   $350,000) with E buy prompts wired to the same Vehicles.Purchase
   validation as the menu; prompts named "PurchasePrompt" so the travel
-  scan skips them.
+  scan skips them. (Session 25 rebuilt the vehicle models themselves.)
+- Session 24 (do NOT regress): a home base for every joining player —
+  BasePlot persisted in the DataStore profile, 10 static plots + 11
+  dynamic slots (21 total), Claim prefers the persisted plot, else first
+  free, else builds dynamically; never shares, never baseless while
+  slots remain.
 - Key invariants (do NOT break): init.server line 12 is
   `local Services=script:WaitForChild("Services")` (the line-12 bug from
   session 6 — never reintroduce `script.Parent.Services`); zone stall
