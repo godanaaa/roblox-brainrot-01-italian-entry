@@ -1,4 +1,4 @@
-# AGENTS.md — ITALIAN BRAINROT WORLD, session 22 (build): LIVELIER BRAINROTS
+# AGENTS.md — ITALIAN BRAINROT WORLD, session 23 (build): PHYSICAL VEHICLE STORE
 
 ## Login / network (READ FIRST)
 - There is NO network in the sandbox and NO login step here. Do NOT try to
@@ -13,13 +13,13 @@
 
 ## Repo facts
 - Repo: /home/hatch/workspace/roblox-brainrot-01-italian-entry (git HEAD
-  = session 21 commit, BUILD 21, clean tree except untracked out/).
+  = session 22 commit, BUILD 22, clean tree except untracked out/).
 - Counted files = `main.ts` + `src/**/*.luau` only. A counted file already
   in the repo with final content when this recording began fails
   `transcripts_witnessed` — so you MUST write (or revise) every counted
   file you touch inside this session. `vendor/makefun-roblox.ts` must stay
   byte-identical. AGENTS.md is NOT counted — rewrite it yourself at the
-  end for session 23 (physical vehicle store).
+  end for session 24 (a home base for every joining player).
 - Verify with: `~/workspace/bin/rojo build default.project.json -o
   game.rbxl` (rebuild game.rbxl from source — never hand-edit it),
   `node main.ts` twice (dossier must be byte-identical; main.ts writes to
@@ -29,70 +29,67 @@
   /home/hatch/workspace/roblox-brainrot-01-kit (expected: 4 passed, 1
   failed = play_link only, 17 skipped).
 - Build marker: update `src/client/MenuController.luau` BuildMarker text
-  to "BUILD 22 • 20 NOV 2026".
+  to "BUILD 23 • 20 NOV 2026".
 
-## JOB — one change (Ryan's brief, 02:35 EAT 20 Nov)
-**MAKE THE BRAINROTS LOOK MORE LIVELY.** All 100 brainrots should feel
-livelier and more polished — still part-built only (no images, no decals,
-no copied art; original chibi style: big heads, big eyes, signature
-items). Brighter and more varied colours, richer signature-item detail
-(Tralalero's shark + sneakers, Bombardiro's crocodile + bomber, Ballerina
-Cappuccina's tutu, and so on for the other named characters), faces with
-expression (eyes, shine, blush, smiles), small accessories where they
-fit, and livelier idle motion (bob / spin / sway / hop — varied per
-character, not the same motion on all 100). Rarity must still read at a
-glance (bigger / brighter / more detailed for higher rarities, glow for
-MYTHIC and SECRET). The catalogue stays EXACTLY as-is (100 names,
-prices, incomes, rarity bands, zone multipliers, Tralalero override).
-The session-19 stall-label fixes must still hold (labels 150x40, within
-16 studs, short 2-line format). Keep the part count reasonable. Landings,
-anchors, stalls, markets, paths, barriers and decorations do NOT move.
-Keep everything from sessions 1–21. Do NOT change prices, incomes,
-rarity bands, zone multipliers, gates, or the admin system.
-- This is session 22, a BUILD session — the final session (PLAY.json +
+## JOB — one change (Ryan's brief, 02:36 EAT 20 Nov)
+**A PHYSICAL STORE TO BUY THE VEHICLES.** Build a showroom / dealership
+building in or next to Starter City, easy to find from spawn, with a clear
+sign, enterable through a clear entrance. Each vehicle — Scooter, Car,
+Supercar, TralaleroMobile — sits on display on its own pad with a readable
+name + price label and a buy prompt (E) that buys server-side with the
+same validation as the existing vehicle system (cash check, ownership
+saved to the profile, visible success/failure). The Vehicles menu panel
+keeps working — the store is an ADDITIONAL way to buy, not a replacement.
+The store must not block walking paths (including the session-20
+zoneroads), travel pads, or the starting-village market. Prices: use the
+EXISTING vehicle prices from the game's data (Scooter $1,500, Car $18,000,
+Supercar $180,000, TralaleroMobile $350,000) — do NOT invent new prices.
+The existing vehicle system lives in `src/server/Services/VehicleService.luau`
+and the prices in `Config.Vehicles` — reuse that buy validation, do not
+write a second one. Landings, anchors, stalls, markets, paths, barriers,
+decorations and brainrots do NOT move. Keep everything from sessions 1–22.
+Do NOT change prices, incomes, rarity bands, zone multipliers, gates, or
+the admin system.
+- This is session 23, a BUILD session — the final session (PLAY.json +
   screenshots) is session 25, after Ryan re-tests this one and the
-  sessions after it.
+  session after it.
 
-## Session 21 outcome (what you are building on — do NOT regress it)
-- BUILD 21 (recording 01a1f648): one change — smooth themed decorations
-  for all 7 zones, ~160 new parts, nothing else touched (no
-  price/income/rarity/gate/multiplier/admin change; Config.luau untouched).
-- A new "decorations" district in MapBuilder.luau builds them through one
-  uniform `dec(name,x,z,w,h,d,color,material,shape,collide,gy,yOff)` helper
-  (absolute coordinates, rounded parts only — balls, cylinders, wedges),
-  placed in the OUTER band of each slab, outside the 140x140 inlay props.
-  Starter City: 4 street lamps, 2 benches, 1 fountain, 4 flower
-  planters, 2 banners. Italian Village: 2 terracotta pot clusters, 1
-  grape-vine trellis, 1 laundry line, 2 cafe tables, 1 fountain. Neon
-  City: 4 glowing trees, 2 light columns, 1 "NEON CITY • GLOW DISTRICT"
-  sign, 2 neon ground strips. Luxury District: 2 gold statues, 3 marble
-  columns, 1 gold fountain, 2 red carpets. Volcano: 2 lava-rock clusters,
-  2 obsidian shards, 2 smoke vents, 2 ember lights. Sky Islands: 4
-  floating clouds, 2 floating lanterns, 2 sky gardens, 2 wind chimes
-  (gy=99). Secret Dimension: 2 purple crystal clusters, 2 floating
-  shards, 2 glowing rune circles, 2 dark portals. Small ground items
-  (flowers, carpets, strips, runes) are CanCollide=false; lamps, benches,
-  fountains, statues, pillars and trees collide like street furniture.
-- Every placement was clearance-audited by ~/workspace/s21-deco-audit.py
-  (parses the dec() calls out of the Lua and checks each 3D box against
-  169 exclusion boxes: roads, market fences + signs, platforms, pads,
-  district buildings, existing props, residences, base plots, the Bazaar,
-  the Sky ramp, city buildings). First run found 34 overlaps — all real:
-  the four Starter-area buildings (Bank, QuestCenter, Dealership,
-  PremiumShop) sit on the slab corners and swallowed the first draft's
-  north/south planters and lamps; the Luxury fountain touched the travel
-  pad; two Sky clouds intersected the district building / existing cloud
-  puffs; one Secret rune nearly touched a rift pillar. All fixed by
-  moving the items (lamps to (-45,-115)/(45,-115), planters to
-  (-80,80)/(80,80)/(125,-30)/(-125,30), Luxury fountain to (800,540),
-  clouds to (1030,780)/(1160,770)/(1020,880)/(1190,800), rune to
-  (115,1165)); the second audit run (3D-aware, with y-ranges) passed with
-  0 overlaps. The audit script is kept for reuse.
-- Verification (session 21): Rojo build clean — game.rbxl <size>, sha256
-  <sha> (was 69,760); main.ts twice, exit 0, dossiers byte-identical,
-  sha256 <sha>; kit check 4 passed, 1 failed (play_link only), 17
-  skipped. Block-balance check on all touched Luau files: balanced
-  (finalDepth 0).
+## Session 22 outcome (what you are building on — do NOT regress it)
+- BUILD 22 (recording 01a1f656): one change — livelier brainrots for all
+  100, nothing else touched (no price/income/rarity/gate/multiplier/admin
+  change; Config.luau untouched).
+- `src/server/Services/BrainrotService.luau` (+131/-8): face() now gives
+  every character a smile (three small balls in a shallow arc under the
+  nose) and eyebrows whose tilt varies per character (id % 3: happy,
+  playful, determined); body-colour palette brighter and more varied (12
+  colours instead of 8); each of the 16 signature builders got 2–4 extra
+  detail parts (Tralalero's tooth row + gold chain, Bombardiro's pilot
+  goggles + bomb, Cappuccina's bow + steam, Gamberetta's gold trumpet +
+  music notes, and so on); each of the 8 fallback forms got one small
+  accessory placed where that form's head/top is (crown, saddle blanket,
+  bowtie, flag, top hat, chef hat, flower, rocket flag). Rarity reads at
+  a glance: whole-model scale by rarity via `Model:ScaleTo` (COMMON 1.0 …
+  DIVINE 1.56; GOLDEN/DIAMOND/RAINBOW on the same ladder) plus a neon
+  halo ring of 8 balls at the base for MYTHIC / SECRET / DIVINE (SECRET's
+  halo is bright purple — its rarity colour is near-black). Idle motion
+  varies per character (id % 5: bob, spin, sway, hop, waddle) and higher
+  rarities move a little faster. Part-creating calls 136 → 198 (~+5 parts
+  per model on average — reasonable).
+- Session-19 stall-label format is UNCHANGED (150x40, 16 studs, 2-line
+  "Name\n$price  +$income/s"); only the label height offset now grows
+  with the rarity scale (4 × scale) so it still floats above the head.
+- `face()` uses `curId`, a module-level variable that `B.Create` sets to
+  the entry id before building — callers pass id when they have it,
+  otherwise the face reads curId. Do not break this: the signature
+  builders do not take an id parameter.
+- Verification (session 22): Rojo build clean — game.rbxl 79,470 bytes
+  (was 74,343), sha256
+  78b5591324b427a2093988f6a5bb9b895651dc6715d36782868e65e79d1c3c35;
+  main.ts twice, exit 0, dossiers byte-identical, sha256
+  bde02e9bb2e9c564928189e9fdc55bfa07c5bfd4da177c6bbb2a889ff45dc814
+  (189,861 bytes); kit check 4 passed, 1 failed (play_link only), 17
+  skipped. Block-balance check on BrainrotService.luau +
+  MenuController.luau: balanced (finalDepth 0).
 - Caveats carried forward: a player can still walk AROUND a zone barrier
   on the grass beside the road (the barrier spans the road plus 2 studs
   each side, not the whole 280-wide slab) — but they cannot buy from that
@@ -100,8 +97,11 @@ rarity bands, zone multipliers, gates, or the admin system.
   applies. The session-19 caveat also stands: at viewports narrower than
   ~900px the centred 620-wide event banner can briefly touch the left
   MENU button during an event only; at normal widths (1455) no overlap.
+  New in session 22 (no action needed, just known): the biggest
+  (DIVINE 1.56×) brainrots overhang their stall stand / base pad slightly
+  — visual only, all parts are CanCollide=false.
 
-## Sessions 1–20 carried forward (do NOT regress)
+## Sessions 1–21 carried forward (do NOT regress)
 - Distinct landscapes per zone (own 280x280 slab), chibi brainrot look
   (oversized eyes + shine + blush, all 100), early gates (Starter
   $0/Lv1/Reb0, Italian $100/Lv1/Reb0, Neon $1,000/Lv1/Reb0, Luxury
@@ -127,6 +127,12 @@ rarity bands, zone multipliers, gates, or the admin system.
   cobble road legs + Sky ramp + 7 signposts) with 6 invisible zone
   barriers + 8 world-edge barriers, enforced by ZoneBarrierService.luau
   with the same live gate as Map travel.
+- Session 21 (do NOT regress): smooth themed decorations for all 7 zones
+  (~160 parts, rounded shapes only) via the `dec()` helper in
+  MapBuilder.luau, clearance-audited with 0 overlaps
+  (~/workspace/s21-deco-audit.py, kept for reuse). Small ground items are
+  CanCollide=false; lamps, benches, fountains, statues, pillars and trees
+  collide like street furniture.
 - Key invariants (do NOT break): init.server line 12 is
   `local Services=script:WaitForChild("Services")` (the line-12 bug from
   session 6 — never reintroduce `script.Parent.Services`); zone stall
@@ -150,9 +156,10 @@ rarity bands, zone multipliers, gates, or the admin system.
   NOT on the platform.
 
 ## Report back when done
-What you changed per item (which files, what livelier details went into
-the brainrots, how the idle motion varies per character, and how rarity
-still reads at a glance), and the verification results (rojo sha + size,
-dossier sha, kit check). Say plainly how Ryan confirms in Studio (look
-at brainrots up close in different zones — lively chibi characters, not
-plain blocks). Quote any transcript/record warnings in full.
+What you changed per item (which files, where the store is, what each
+vehicle pad shows, how the buy prompt reuses the existing vehicle
+validation), and the verification results (rojo sha + size, dossier sha,
+kit check). Say plainly how Ryan confirms in Studio (walk into the store
+from spawn, see all four vehicles with prices, press E on one, confirm it
+buys and appears in the Vehicles panel). Quote any transcript/record
+warnings in full.
