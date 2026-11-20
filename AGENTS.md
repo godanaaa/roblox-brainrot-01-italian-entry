@@ -1,4 +1,4 @@
-# AGENTS.md — ITALIAN BRAINROT WORLD, session 20 (build): SMALLER STARTING SHOP + WALKABLE ROUTES
+# AGENTS.md — ITALIAN BRAINROT WORLD, session 21 (build): LIVELY SMOOTH DECORATIONS PER ZONE
 
 ## Login / network (READ FIRST)
 - There is NO network in the sandbox and NO login step here. Do NOT try to
@@ -13,13 +13,13 @@
 
 ## Repo facts
 - Repo: /home/hatch/workspace/roblox-brainrot-01-italian-entry (git HEAD
-  = session 19 commit, BUILD 19, clean tree except untracked out/).
+  = session 20 commit, BUILD 20, clean tree except untracked out/).
 - Counted files = `main.ts` + `src/**/*.luau` only. A counted file already
   in the repo with final content when this recording began fails
   `transcripts_witnessed` — so you MUST write (or revise) every counted
   file you touch inside this session. `vendor/makefun-roblox.ts` must stay
   byte-identical. AGENTS.md is NOT counted — rewrite it yourself at the
-  end for session 21 (lively smooth decorations per zone).
+  end for session 22 (livelier brainrots).
 - Verify with: `~/workspace/bin/rojo build default.project.json -o
   game.rbxl` (rebuild game.rbxl from source — never hand-edit it),
   `node main.ts` twice (dossier must be byte-identical; main.ts writes to
@@ -29,78 +29,97 @@
   /home/hatch/workspace/roblox-brainrot-01-kit (expected: 4 passed, 1
   failed = play_link only, 17 skipped).
 - Build marker: update `src/client/MenuController.luau` BuildMarker text
-  to "BUILD 20 • 20 NOV 2026".
+  to "BUILD 21 • 20 NOV 2026".
 
-## JOB — two changes (Ryan's brief, 02:33 EAT 20 Nov)
-1. **SMALLER SHOP IN THE STARTING VILLAGE.** The Starter City
-   marketplace (the shop in the starting village) is too big. Shrink its
-   physical footprint — tighter stall layout, smaller fenced area —
-   while keeping all 20 of its brainrots purchasable. If the central
-   Bazaar reads as oversized too, trim it the same way. Do NOT cut the
-   brainrot counts; make the same shop smaller.
-2. **WALKABLE ROUTES BETWEEN CITIES + INVISIBLE BARRIERS.** Right now
-   the only way between cities is the Map or a travel pad. Add walkable
-   ground paths (roads / bridges over the gaps between the zone slabs)
-   so a player can WALK from Starter City into each other city. At each
-   zone entrance put an INVISIBLE barrier (transparent, CanCollide)
-   that blocks a player from walking in while the zone is still locked,
-   and opens once the zone is unlocked — server-enforced, using the same
-   gate requirements (cash + level + rebirth) as the Map travel. Also
-   put invisible barriers at the world edges so players cannot walk off
-   the slabs and fall. Keep the Map travel and the travel pads working
-   exactly as before — walking is an additional way in, not a
-   replacement. Landings, anchors, stalls, and markets do NOT move.
-- Keep everything from sessions 1–19. Do NOT change prices, incomes,
-  rarity bands, zone multipliers, gates, or the admin system.
-- This is session 20, a BUILD session — the final session (PLAY.json +
+## JOB — one change (Ryan's brief, 02:34 EAT 20 Nov)
+**LIVELY SMOOTH DECORATIONS PER ZONE.** Every zone's landscape should
+feel alive and finished, not flat or empty. Add smooth, themed
+decorations to each of the 7 zones, matching each zone's own look
+(Starter cobble piazza, Italian terracotta village, Neon glowing night
+city, Luxury white marble + gold, Volcano black basalt + lava, Sky
+floating islands + clouds, Secret dark purple rift): more trees, plants,
+flowers, bushes, street lamps, benches, fountains, statues, banners,
+glowing accents, clouds, and small ambient details that make the world
+feel lived-in. Smooth the decoration shapes (rounded, polished parts, no
+sharp placeholder blocks) and vary the placement so it doesn't look
+copy-pasted. Keep the decorations OUT of the way — they must not block
+walking paths, stall access, travel pads, arrival platforms, or base
+plots, and must not cover the market signs. Keep the part count
+reasonable so the game still runs smoothly. Landings, anchors, stalls,
+markets, paths, and barriers do NOT move. Keep everything from sessions
+1–20. Do NOT change prices, incomes, rarity bands, zone multipliers,
+gates, or the admin system.
+- This is session 21, a BUILD session — the final session (PLAY.json +
   screenshots) is session 25, after Ryan re-tests this one and the
   sessions after it.
 
-## Session 19 outcome (what you are building on — do NOT regress it)
-- BUILD 19 (recording 01a1f626): four UI defects fixed, nothing else
-  touched (no price/income/rarity/gate/multiplier/admin change;
-  Config.luau untouched).
-- Defect 1 (tofu boxes): the MENU button used U+2630 "☰" and the event
-  banner used U+2726 "✦" — neither renders in Roblox Gotham, both showed
-  as □. Both glyphs dropped: button is plain "MENU", banner is
-  "%s • %s • %ds" (name • description • countdown). A full non-ASCII
-  sweep found no other risky glyphs: "•" (U+2022), "×" (U+00D7) and the
-  cash-panel emojis (money bag, diamond, star, flame) all render in
-  Ryan's screenshots and were kept. The em dash "—" (U+2014) in four
-  user-visible strings was replaced with "-" (hyphen) in
-  HUDController.luau (leaderboard fallback), AdminService.luau (unknown
-  zone; base full) and init.server.luau (welcome notify).
-- Defect 2 (overlapping/clipped stall labels): `U.Label` in Util.luau
-  now takes optional (width, height, maxDistance); defaults 190x48 /
-  24 studs unchanged for signs, landmarks, travel pads and base plaques.
-  Market stall labels (BrainrotService.luau) and zone stall labels
-  (ShopService.luau) are now 150x40, show only within 16 studs (the
-  same range as the buy prompt), and use a short 2-line format:
-  market "Name\n$price  +$income/s" (rarity word dropped — rarity is
-  in the buy prompt and the stall's rarity glow); zone "Name\n$price"
-  (the "ZONE ×N" line dropped — the buy prompt already shows
-  "ZONE ×N • BUY $price" + name/rarity/income). RefreshMarketPrices
-  (ShopService.luau) writes the SAME short format, so the two writers
-  no longer fight; the rain discount still shows in the buy prompt
-  (" • SALE") and the label price is already discounted.
-- Defect 3 (Neon sign blocked): the pink/cyan NeonSkylineSign towers +
-  bars + "NEON CROWN" moved from (850,0,-285) to (850,0,-180) — 105
-  studs north of the market, same avenue block, clear of the sign
-  sightline from every approach. The sign itself stays at the west
-  fence (798,6,-350), entrance side.
-- Defect 4 (leaderboard overlaps MENU): the panel in Ryan's screenshots
-  is the ROBLOX CORE player list (People / Cash / Rebirths / Brainrots —
-  the leaderstats columns), which renders above PlayerGui and cannot be
-  moved by the developer. Fix: the MENU button moved from top-right
-  (1,-145,0,18) to the LEFT below the cash bar (12,66), and the
-  MenuPanel dropdown moved from top-right (1,-275,0,80) to the left
-  below the button (12,126). The game's own InfoPanel stays top-right
-  (1,-480,0,82) — it never overlapped the button. Caveat: at viewports
+## Session 20 outcome (what you are building on — do NOT regress it)
+- BUILD 20 (recording 01a1f636): two changes, nothing else touched (no
+  price/income/rarity/gate/multiplier/admin change; Config.luau untouched).
+- Change 1 (smaller starting shop): every zone marketplace tightened —
+  stall grid spacing 20 -> 18 studs (4x5 grid now 54x72 instead of
+  60x80; stands are 14 wide, so a 4-stud gap remains between neighbours,
+  and a neighbouring stall is 18 studs away — just outside the 16-stud
+  range of the session-19 stall labels, so labels still never overlap),
+  fenced enclosure 100x120 -> 80x96 (halfW 50 -> 40, halfD 60 -> 48).
+  Market sign offsets now derive from the fence half-extents
+  (halfW+2 / halfD+2) instead of hardcoded 52/62, so the sign always
+  sits on the fence line. All ~20 brainrots per zone still purchasable
+  (Sky 19 — unchanged). The central Bazaar was trimmed the same way at
+  the north end only: floor 280x580 -> 280x420 (z 480..900), north glass
+  walls + MarketSign + MarketEntranceSign + MarketNorthRamp moved to
+  z=480/472 (60 studs north of the first stall row instead of 220);
+  south wall, halls (z=860), east entrance gap (z 580..620) and the
+  east/west walls' south ends did NOT move. The south-end trim was
+  rejected because the halls would collide with the CanalBridge.
+- Change 2 (walkable routes + invisible barriers): a new "zoneroads"
+  district in MapBuilder.luau builds 21 road legs (16-stud cobble
+  inlays, top y=-0.9, gold edge strips) on shared trunks out of the
+  Starter plaza (east z=0 to x=1000, west z=0 to x=-1000, south x=0 to
+  z=290) to every zone slab edge, plus a Starter-market spur that routes
+  around the Bank to the market's west entrance gap at (220,-130), and a
+  21.8deg cobble Sky ramp (1160,500 -> 1160,750, top flush with the Sky
+  island at y=99, side rails, east of the Sky market island which ends
+  at x=1145). Seven signposts mark each branch ("TO ITALIAN VILLAGE",
+  "TO NEON CITY", "TO LUXURY DISTRICT", "TO VOLCANO", "TO SKY ISLANDS",
+  "TO SECRET DIMENSION", "TO STARTER MARKET"). Six invisible zone
+  barriers (transparent, CanCollide, 20 wide x 12 tall) sit across each
+  zone's road entrance: Italian (-700,5,308), Neon (560,5,-300), Luxury
+  (800,5,510), Volcano (-960,5,-800), Sky (1160,5,500), Secret
+  (140,5,1050); each carries ZoneName + ApproachDir attributes. Eight
+  invisible world-edge barriers ring the world (north z=-1100, west
+  x=-1300, east x=1300, south z=1100 with a step-out to z=1200 around
+  the Secret slab). New server service ZoneBarrierService.luau enforces
+  the zone barriers with the SAME live gate as the Map travel handler
+  (cash + BaseLevel + Rebirths): unlocked player -> zone marked
+  unlocked (d.UnlockedZones, so zone stalls can be bought from) and the
+  barrier opens (CanCollide=false) for 3s; locked player entering ->
+  solid wall + LOCKED notify with the requirements (same format as
+  travel), throttled to once per 3s per player per barrier; locked
+  player leaving -> always allowed, opens with no notify. A 0.5s
+  Heartbeat sweep bounces back a locked player who slipped through
+  while the barrier was open for someone else (only within 12 studs of
+  a barrier and on its zone side, so legitimate zone visitors are never
+  touched). Map travel and travel pads work exactly as before.
+- Verification (session 20): Rojo build clean — game.rbxl 69,760 bytes,
+  sha256 f7149bfac670a7a30bdae59d82d19bcc6cf31795f2f3214af53e30498a75136a
+  (was 62,863); main.ts twice, exit 0, dossiers byte-identical, sha256
+  8828ba0b1afc19c8a0f34a7d6991b966189cede8ae9773d77d12d18418c5f8da
+  (189,778 bytes); kit check 4 passed, 1 failed (play_link only), 17
+  skipped. All routes clearance-audited against every building footprint
+  (half-width 8); the only real blocker was the Bank on the Starter-
+  market spur, fixed by routing around it. Block-balance check on all
+  touched Luau files: balanced (finalDepth 0).
+- Caveat carried forward: a player can still walk AROUND a zone barrier
+  on the grass beside the road (the barrier spans the road plus 2 studs
+  each side, not the whole 280-wide slab) — but they cannot buy from
+  that zone's stalls without UnlockedZones, and the Map travel gate
+  still applies. The session-19 caveat also stands: at viewports
   narrower than ~900px the centred 620-wide event banner can briefly
   touch the left MENU button during an event only; at normal widths
-  (screenshots are 1455 wide) there is no overlap.
+  (1455) no overlap.
 
-## Sessions 1–18 carried forward (do NOT regress)
+## Sessions 1–19 carried forward (do NOT regress)
 - Distinct landscapes per zone (own 280x280 slab), chibi brainrot look
   (oversized eyes + shine + blush, all 100), early gates (Starter
   $0/Lv1/Reb0, Italian $100/Lv1/Reb0, Neon $1,000/Lv1/Reb0, Luxury
@@ -114,6 +133,12 @@
   :cash :gems :level :rebirth :unlock :tp :give :help — server-side
   creator check (game.CreatorId / game.CreatorType), CreatorId == 0
   means the Studio tester is the owner.
+- Session 19 UI fixes (do NOT regress): no tofu boxes (MENU button is
+  plain "MENU", event banner is "%s • %s • %ds", no "—" in user-visible
+  strings — "•", "×" and the cash-panel emojis render and were kept);
+  stall labels 150x40, visible only within 16 studs, short 2-line
+  format; NeonSkylineSign towers at (850,0,-180); MENU button on the
+  LEFT below the cash bar (12,66), MenuPanel below it (12,126).
 - Key invariants (do NOT break): init.server line 12 is
   `local Services=script:WaitForChild("Services")` (the line-12 bug from
   session 6 — never reintroduce `script.Parent.Services`); zone stall
@@ -137,11 +162,9 @@
   NOT on the platform.
 
 ## Report back when done
-What you changed per item (which files, the new shop footprint and stall
-layout, where the walkable paths run, where each invisible barrier is
-and how it opens), and the verification results (rojo sha + size,
-dossier sha, kit check). Say plainly how Ryan confirms in Studio (walk
-from Starter City into Italian Village on foot; try walking into a
-locked zone and confirm the invisible barrier stops him; check the
-starting-village shop is visibly smaller). Quote any transcript/record
-warnings in full.
+What you changed per item (which files, what decorations went into each
+zone, where they are, and how you kept them out of the paths/stalls/pads),
+and the verification results (rojo sha + size, dossier sha, kit check).
+Say plainly how Ryan confirms in Studio (walk each zone and see the new
+decorations; nothing blocks a path or a stall). Quote any
+transcript/record warnings in full.
