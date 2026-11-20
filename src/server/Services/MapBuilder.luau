@@ -34,22 +34,29 @@ function Map.Build()
  end)
  district("market",function()
  -- marketplace is its own destination, with colored halls
- local market=model("BrainrotMarketplace");U.Part(market,"MarketFloor",Vector3.new(280,4,580),Vector3.new(0,1,610),Color3.fromRGB(35,35,58),Enum.Material.Marble)
- U.Label(U.Part(market,"MarketSign",Vector3.new(100,8,4),Vector3.new(0,30,320),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BRAINROT BAZAAR",Color3.new(1,1,1))
+ -- Session 20: the Bazaar floor is trimmed at the north end (280x580 ->
+ -- 280x420, z 480..900). The old north forecourt (z 320..540) was 220
+ -- studs of empty floor between the entrance and the first stall row;
+ -- the entrance, signs, ramp and north glass walls all move south to
+ -- z=480, 60 studs north of the stalls. The halls (z=860), south wall,
+ -- east entrance gap (z 580..620) and east/west walls' south ends do NOT
+ -- move. The floor still covers the stalls (z 540..620) and the halls.
+ local market=model("BrainrotMarketplace");U.Part(market,"MarketFloor",Vector3.new(280,4,420),Vector3.new(0,1,690),Color3.fromRGB(35,35,58),Enum.Material.Marble)
+ U.Label(U.Part(market,"MarketSign",Vector3.new(100,8,4),Vector3.new(0,30,480),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BRAINROT BAZAAR",Color3.new(1,1,1))
  for i=1,8 do local x=-112+(i-1)*32;local rarity=({"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","DIVINE"})[i];local col=C.Rarities[rarity].Color;building(market,rarity.."Hall",Vector3.new(x,3,860),col,27,18,70,rarity) end
  -- Session 17: the Bazaar is now an ENCLOSED space, not an open field of
  -- stalls. Glass walls (12 tall, sitting on the floor top y=3) run around
- -- the whole 280x580 floor, with two clear entrances: NORTH (a 40-stud gap
+ -- the whole floor, with two clear entrances: NORTH (a 40-stud gap
  -- at x -20..20, aligned with the MarketNorthRamp) and EAST (a 40-stud gap
  -- at z 580..620). The halls at z=860 sit inside the south wall.
  local function glassWall(name,size,pos) local w=U.Part(market,name,size,pos,Color3.fromRGB(180,230,255),Enum.Material.Glass);w.Transparency=.4;w.CanCollide=true;return w end
- glassWall("GlassWallNorthA",Vector3.new(120,12,.5),Vector3.new(-80,9,320))
- glassWall("GlassWallNorthB",Vector3.new(120,12,.5),Vector3.new(80,9,320))
+ glassWall("GlassWallNorthA",Vector3.new(120,12,.5),Vector3.new(-80,9,480))
+ glassWall("GlassWallNorthB",Vector3.new(120,12,.5),Vector3.new(80,9,480))
  glassWall("GlassWallSouth",Vector3.new(280,12,.5),Vector3.new(0,9,900))
- glassWall("GlassWallEastA",Vector3.new(.5,12,260),Vector3.new(140,9,450))
+ glassWall("GlassWallEastA",Vector3.new(.5,12,100),Vector3.new(140,9,530))
  glassWall("GlassWallEastB",Vector3.new(.5,12,280),Vector3.new(140,9,760))
- glassWall("GlassWallWest",Vector3.new(.5,12,580),Vector3.new(-140,9,610))
- U.Label(U.Part(market,"MarketEntranceSign",Vector3.new(60,6,2),Vector3.new(0,16,320),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BAZAAR  •  ENTER",Color3.new(1,1,1))
+ glassWall("GlassWallWest",Vector3.new(.5,12,420),Vector3.new(-140,9,690))
+ U.Label(U.Part(market,"MarketEntranceSign",Vector3.new(60,6,2),Vector3.new(0,16,480),Color3.fromRGB(255,80,175),Enum.Material.Neon),"BAZAAR  •  ENTER",Color3.new(1,1,1))
  end)
  district("nature",function()
  -- canal, bridge, tunnel, lakeshore/beach, hills, forest, mountain silhouettes
@@ -171,6 +178,123 @@ function Map.Build()
  end
  for i=1,22 do local x=-900+(i%11)*180;local z=-500+math.floor(i/11)*850;building(root,"Residence_"..i,Vector3.new(x,0,z),Color3.fromHSV((i*.071)%1,.45,.95),52,24+(i%3)*6,48) end
  end)
+ district("zoneroads",function()
+ -- Session 20: WALKABLE ROUTES between cities + INVISIBLE BARRIERS.
+ -- Before this session the only way between cities was the Map or a
+ -- travel pad. Now every zone is also reachable on foot from Starter
+ -- City on a 16-stud cobble road (flush inlay, top y=-0.9, gold edge
+ -- strips so the route reads clearly), with a signpost at each branch.
+ -- All routes were checked against every building footprint with a
+ -- half-width-8 clearance audit; the only real blocker was the Bank on
+ -- the Starter-market spur, which routes around it to the east.
+ -- Landings, anchors, stalls and markets do NOT move; Map travel and
+ -- travel pads work exactly as before.
+ local roads=model("ZoneRoads")
+ local function road(name,x1,z1,x2,z2)
+  -- one axis-aligned leg; the road is a flush cobble inlay (1 thick,
+  -- centre y=-1.4, top y=-0.9, 0.05 above the ground/avenue inlays so
+  -- it never z-fights) with a 1-stud gold strip along each edge.
+  local len=math.max(math.abs(x2-x1),math.abs(z2-z1))
+  local cx,cz=(x1+x2)/2,(z1+z2)/2
+  local horizontal=z1==z2
+  local size=horizontal and Vector3.new(len,1,16) or Vector3.new(16,1,len)
+  U.Part(roads,name,size,Vector3.new(cx,-1.4,cz),Color3.fromRGB(205,177,132),Enum.Material.Cobblestone)
+  local edge=horizontal and Vector3.new(len,0.2,1) or Vector3.new(1,0.2,len)
+  local off=horizontal and Vector3.new(0,0,7.5) or Vector3.new(7.5,0,0)
+  U.Part(roads,name.."EdgeA",edge,Vector3.new(cx,-0.95,cz)+off,Color3.fromRGB(212,175,55),Enum.Material.Metal)
+  U.Part(roads,name.."EdgeB",edge,Vector3.new(cx,-0.95,cz)-off,Color3.fromRGB(212,175,55),Enum.Material.Metal)
+ end
+ -- shared trunks out of the Starter plaza (plaza edge at +/-90)
+ road("TrunkE",90,0,1000,0) -- east trunk: Luxury, Sky, Secret
+ road("TrunkW",-90,0,-1000,0) -- west trunk: Volcano
+ road("TrunkN",0,-90,0,290) -- south trunk (avenue): Italian
+ -- Italian Village: south on the avenue, west along z=290, stub to the slab
+ road("ItalianW",0,290,-700,290)
+ road("ItalianS",-700,290,-700,310)
+ -- Neon City: east along z=-80, north on x=200, east along z=-300 to the slab
+ road("NeonE1",90,-80,200,-80)
+ road("NeonN",200,-80,200,-300)
+ road("NeonE2",200,-300,560,-300)
+ -- Luxury District: east on the trunk, south on x=800 to the slab
+ road("LuxuryS1",800,0,800,300)
+ road("LuxuryS2",800,300,800,510)
+ -- Volcano: west on the trunk, north on x=-1000, east along z=-800 to the slab
+ road("VolcanoN1",-1000,0,-1000,-300)
+ road("VolcanoN2",-1000,-300,-1000,-800)
+ road("VolcanoE",-1000,-800,-960,-800)
+ -- Sky Islands: east on the trunk, south on x=1000, east along z=500 to the ramp
+ road("SkyS",1000,0,1000,500)
+ road("SkyE",1000,500,1160,500)
+ -- Secret Dimension: east on the trunk, south on x=290, west along z=1050 to the slab
+ road("SecretS1",290,0,290,300)
+ road("SecretS2",290,300,290,1050)
+ road("SecretW",290,1050,140,1050)
+ -- Starter-market spur: around the Bank (which blocks a direct z=-130
+ -- run) to the market's west entrance gap at (220,-130)
+ road("StarterMkt1",90,-60,200,-60)
+ road("StarterMkt2",200,-60,200,-130)
+ road("StarterMkt3",200,-130,220,-130)
+ -- Sky ramp: the Sky Islands slab floats at y=99, so the ground road ends
+ -- at the ramp base (1160,500) and a 21.8deg cobble ramp climbs 100 studs
+ -- to the main island (landing at 1160,750, top flush with the island).
+ -- The ramp runs EAST of the Sky market island (which ends at x=1145),
+ -- and its side rails keep a player from walking off the edge.
+ local rampLen=math.sqrt(250*250+100*100)
+ local ramp=U.Part(roads,"SkyRamp",Vector3.new(16,2,rampLen),Vector3.new(1160,48,625),Color3.fromRGB(205,177,132),Enum.Material.Cobblestone)
+ ramp.CFrame=CFrame.new(1160,48,625)*CFrame.Angles(math.rad(-21.8),0,0)
+ for _,side in ipairs({-1,1}) do
+  local rail=U.Part(roads,"SkyRampRail"..(side<0 and "W" or "E"),Vector3.new(1,4,rampLen),Vector3.new(0,0,0),Color3.fromRGB(212,175,55),Enum.Material.Metal)
+  rail.CFrame=ramp.CFrame*CFrame.new(side*7.5,3,0)
+ end
+ -- signposts at each branch, so a player on foot can read where a road goes
+ local function signpost(name,pos,text)
+  U.Part(roads,name.."Post",Vector3.new(2,8,2),pos+Vector3.new(0,3,0),Color3.fromRGB(120,72,20),Enum.Material.Wood)
+  U.Label(U.Part(roads,name,Vector3.new(56,10,2),pos+Vector3.new(0,8,0),Color3.fromRGB(255,220,120),Enum.Material.Wood),text,Color3.new(0.15,0.1,0.05))
+ end
+ signpost("SignItalian",Vector3.new(12,0,60),"TO ITALIAN VILLAGE")
+ signpost("SignNeon",Vector3.new(190,0,-70),"TO NEON CITY")
+ signpost("SignLuxury",Vector3.new(810,0,10),"TO LUXURY DISTRICT")
+ signpost("SignVolcano",Vector3.new(-1010,0,10),"TO VOLCANO")
+ signpost("SignSky",Vector3.new(1010,0,10),"TO SKY ISLANDS")
+ signpost("SignSecret",Vector3.new(300,0,10),"TO SECRET DIMENSION")
+ signpost("SignStarterMkt",Vector3.new(100,0,-70),"TO STARTER MARKET")
+ -- ZONE BARRIERS: one invisible (transparent, CanCollide) wall across
+ -- each zone's road entrance. ZoneBarrierService (server) enforces them:
+ -- a locked player is stopped and shown the gate requirements; an
+ -- unlocked player walks through (the barrier opens for 3s and the zone
+ -- is marked unlocked, so its stalls can be bought from). ApproachDir
+ -- points from the zone back toward the road (the direction a player is
+ -- bounced when they are on the zone side while locked).
+ local function zoneBarrier(name,zoneName,pos,size,approach)
+  local b=U.Part(roads,name,size,pos,Color3.fromRGB(255,255,255),Enum.Material.SmoothPlastic)
+  b.Transparency=1;b.CanCollide=true;b.CanQuery=true
+  b:SetAttribute("ZoneName",zoneName);b:SetAttribute("ApproachDir",approach)
+  return b
+ end
+ zoneBarrier("ZoneBarrier_Italian","Italian Village",Vector3.new(-700,5,308),Vector3.new(20,12,1),Vector3.new(0,0,-1))
+ zoneBarrier("ZoneBarrier_Neon","Neon City",Vector3.new(560,5,-300),Vector3.new(1,12,20),Vector3.new(-1,0,0))
+ zoneBarrier("ZoneBarrier_Luxury","Luxury District",Vector3.new(800,5,510),Vector3.new(20,12,1),Vector3.new(0,0,-1))
+ zoneBarrier("ZoneBarrier_Volcano","Volcano",Vector3.new(-960,5,-800),Vector3.new(1,12,20),Vector3.new(1,0,0))
+ zoneBarrier("ZoneBarrier_Sky","Sky Islands",Vector3.new(1160,5,500),Vector3.new(20,12,1),Vector3.new(0,0,-1))
+ zoneBarrier("ZoneBarrier_Secret","Secret Dimension",Vector3.new(140,5,1050),Vector3.new(1,12,20),Vector3.new(1,0,0))
+ -- WORLD-EDGE BARRIERS: invisible walls around the whole world so a
+ -- player can never walk off a slab and fall into the void. The south
+ -- edge steps out to z=1200 around the Secret slab (z 1000..1200),
+ -- which is the only slab that pokes past the ground tiles (z=1100).
+ local function edgeBarrier(name,size,pos)
+  local w=U.Part(roads,name,size,pos,Color3.fromRGB(255,255,255),Enum.Material.SmoothPlastic)
+  w.Transparency=1;w.CanCollide=true;w.CanQuery=true
+  return w
+ end
+ edgeBarrier("WorldEdge_North",Vector3.new(2600,20,1),Vector3.new(0,9,-1100))
+ edgeBarrier("WorldEdge_West",Vector3.new(1,20,2200),Vector3.new(-1300,9,0))
+ edgeBarrier("WorldEdge_East",Vector3.new(1,20,2200),Vector3.new(1300,9,0))
+ edgeBarrier("WorldEdge_SouthW",Vector3.new(1160,20,1),Vector3.new(-720,9,1100))
+ edgeBarrier("WorldEdge_SouthE",Vector3.new(1160,20,1),Vector3.new(720,9,1100))
+ edgeBarrier("WorldEdge_SouthSecret",Vector3.new(280,20,1),Vector3.new(0,9,1200))
+ edgeBarrier("WorldEdge_SouthConnW",Vector3.new(1,20,100),Vector3.new(-140,9,1150))
+ edgeBarrier("WorldEdge_SouthConnE",Vector3.new(1,20,100),Vector3.new(140,9,1150))
+ end)
  district("landscapes",function()
  -- Session 17 JOB 1: every zone sits on its OWN landscape, not the shared
  -- flat green ground with a 140x140 inlay. Each zone gets a large ground
@@ -239,7 +363,9 @@ function Map.Build()
  -- North ramp into the market: the market floor top is y=3, the ground is
  -- y=-1, so a 4-stud step. A 16-stud ramp at -14deg (top meets the floor
  -- at z=320 and the ground at z=304) makes the entry smooth.
- local ramp=U.Part(root,"MarketNorthRamp",Vector3.new(280,0.5,16),Vector3.new(0,0.75,312),Color3.fromRGB(205,177,132),Enum.Material.Concrete);ramp.CFrame=CFrame.new(0,0.75,312)*CFrame.Angles(math.rad(-14),0,0)
+ -- Session 20: moved south to z=472 so its top meets the trimmed Bazaar
+ -- floor's north edge (z=480); the ramp's bottom is at z=464 on the ground.
+ local ramp=U.Part(root,"MarketNorthRamp",Vector3.new(280,0.5,16),Vector3.new(0,0.75,472),Color3.fromRGB(205,177,132),Enum.Material.Concrete);ramp.CFrame=CFrame.new(0,0.75,472)*CFrame.Angles(math.rad(-14),0,0)
  -- three physical travel beacons; server handler checks the destination and moves the character
  for _,entry in ipairs({{"PLAZZA FAST TRAVEL",Vector3.new(0,0,85),Color3.fromRGB(80,220,255),"City"},{"BAZAAR FAST TRAVEL",Vector3.new(0,0,300),Color3.fromRGB(255,80,180),"Market"}}) do
   local pad=U.Part(root,entry[1],Vector3.new(16,2,16),entry[2],entry[3],Enum.Material.Neon);local prompt=Instance.new("ProximityPrompt");prompt.ActionText="TRAVEL";prompt.ObjectText=entry[1];prompt.MaxActivationDistance=16;prompt.RequiresLineOfSight=false;prompt.Parent=pad;pad:SetAttribute("TravelTarget",entry[4])

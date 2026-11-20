@@ -126,10 +126,16 @@ function Shop.Init(remotes)
   -- stalls standing in the open. The Secret zone's offers include MYTHIC
   -- (the catalogue only holds 5 SECRET + 5 DIVINE entries, so MYTHIC fills
   -- its market to 20); Sky holds 19 (all 14 MYTHIC + all 5 SECRET).
+  -- Session 20: the grid tightens (20-stud spacing -> 18) and the fence
+  -- shrinks (100x120 -> 80x96), so the shop reads visibly smaller in the
+  -- world while still holding all ~20 brainrots. Stands are 14 wide, so
+  -- 18-stud spacing still leaves a 4-stud gap between neighbours, and a
+  -- neighbouring stall is 18 studs away — just outside the 16-stud range
+  -- of the session-19 stall labels, so labels still never overlap.
   local entries=pickOffers(list,20)
   for i,entry in ipairs(entries) do
    local col=(i-1)%4;local row=math.floor((i-1)/4)
-   local pos=Vector3.new(center.X-30+col*20,center.Y,center.Z-40+row*20)
+   local pos=Vector3.new(center.X-27+col*18,center.Y,center.Z-36+row*18)
    local ok,err=pcall(function() addStall(folder,entry,pos,zone.Name:gsub(" ","").."Stall"..i,zone.Name,mult,remotes) end)
    if ok then built+=1 else failed+=1;warn("[IBW] Zone stall "..zone.Name.." #"..i.." ("..entry.Name..") failed: "..tostring(err)) end
   end
@@ -137,9 +143,10 @@ function Shop.Init(remotes)
   -- facing the zone anchor (where the player arrives from).
   local dx=zone.Position.X-center.X;local dz=zone.Position.Z-center.Z
   local gapSide=(math.abs(dx)>math.abs(dz)) and (dx<0 and "W" or "E") or (dz<0 and "S" or "N")
-  fenceMarket(folder,center.X,center.Y-1,center.Z,50,60,gapSide,12)
+  local fenceHalfW,fenceHalfD=40,48
+  fenceMarket(folder,center.X,center.Y-1,center.Z,fenceHalfW,fenceHalfD,gapSide,12)
   local sign=Instance.new("Part");sign.Name=zone.Name.."MarketSign";sign.Size=Vector3.new(22,7,1)
-  if gapSide=="N" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z+62) elseif gapSide=="S" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z-62) elseif gapSide=="E" then sign.Position=Vector3.new(center.X+52,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) else sign.Position=Vector3.new(center.X-52,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) end
+  if gapSide=="N" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z+fenceHalfD+2) elseif gapSide=="S" then sign.Position=Vector3.new(center.X,center.Y+6,center.Z-fenceHalfD-2) elseif gapSide=="E" then sign.Position=Vector3.new(center.X+fenceHalfW+2,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) else sign.Position=Vector3.new(center.X-fenceHalfW-2,center.Y+6,center.Z);sign.Orientation=Vector3.new(0,90,0) end
   sign.Anchored=true;sign.Color=zone.Color;sign.Material=Enum.Material.Neon;sign.Parent=folder
   U.Label(sign,zone.Name:upper().." MARKET  •  "..#entries.." BRAINROTS",Color3.new(1,1,1))
  end
