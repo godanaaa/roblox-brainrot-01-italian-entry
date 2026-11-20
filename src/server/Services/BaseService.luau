@@ -28,22 +28,74 @@ local function fence(plot,p)
   part(plot,"FenceRail",Vector3.new(144,2,2),p+Vector3.new(0,8,z),white,Enum.Material.Wood)
  end
 end
+-- Extra plot slots for the dynamic builder, in the order they are used.
+-- Row A extends the z=900 row west by one (the east end hits the
+-- RollingHills past x=1100, and the west end grazes one at x=-1060);
+-- row B is a second row at z=1030, clear of the Secret slab
+-- (x -140..140), the Secret road (x=290), the z=1100 south-edge
+-- barriers, the Sky ramp and every residence. Small landscape items
+-- (palms, trees, stones, wildflowers) inside a new yard are cleared by
+-- Base.ClearYard, the session-12 precedent for trees in base yards.
+-- Hills are never built on. 10 static + 11 dynamic = 21 plots.
+local extraSlots={
+ Vector3.new(-880,0,900),
+ Vector3.new(500,0,1030),Vector3.new(680,0,1030),Vector3.new(860,0,1030),
+ Vector3.new(1040,0,1030),Vector3.new(1220,0,1030),
+ Vector3.new(-320,0,1030),Vector3.new(-500,0,1030),Vector3.new(-680,0,1030),
+ Vector3.new(-860,0,1030),Vector3.new(-1040,0,1030),
+}
+local clearable={TreeTrunk=true,TreeCrown=true,PalmTrunk=true,PalmCrown=true,PalmFrond=true,GardenStone=true,Wildflower=true}
+function Base.ClearYard(x,z)
+ for _,o in ipairs(workspace:GetDescendants()) do
+  if clearable[o.Name] and o:IsA("BasePart") and math.abs(o.Position.X-x)<=77 and math.abs(o.Position.Z-z)<=62 then o:Destroy() end
+ end
+end
+function Base.BuildPlot()
+ local slot=extraSlots[#Base.Plots-9]
+ if not slot then return nil end
+ local i=#Base.Plots+1
+ local m=Instance.new("Model");m.Name="Plot"..i;m.Parent=Base.Folder
+ local plot={Index=i,Model=m,Owner=nil,Position=slot,Style=((i-1)%8)+1}
+ Base.Plots[i]=plot
+ part(m,"Yard",Vector3.new(150,2,120),slot+Vector3.new(0,1,0),Color3.fromRGB(95,190,100),Enum.Material.Grass)
+ Base.ClearYard(slot.X,slot.Z)
+ warn("[IBW] Built extra base plot "..i.." at "..tostring(slot))
+ return plot
+end
 function Base.Init()
  local folder=Instance.new("Folder");folder.Name="PlayerBases";folder.Parent=workspace
- for i=1,8 do
-  local x=-700+(i-1)*180;local z=900;local m=Instance.new("Model");m.Name="Plot"..i;m.Parent=folder
-  Base.Plots[i]={Model=m,Owner=nil,Position=Vector3.new(x,0,z),Style=i}
+ Base.Folder=folder
+ for i=1,10 do
+  local x;if i<=8 then x=-700+(i-1)*180 else x=560+(i-8)*180 end
+  local z=900;local m=Instance.new("Model");m.Name="Plot"..i;m.Parent=folder
+  Base.Plots[i]={Index=i,Model=m,Owner=nil,Position=Vector3.new(x,0,z),Style=((i-1)%8)+1}
   part(m,"Yard",Vector3.new(150,2,120),Vector3.new(x,1,z),Color3.fromRGB(95,190,100),Enum.Material.Grass)
+  Base.ClearYard(x,z)
  end
 end
 function Base.Claim(player)
  if Base.Get(player) then return Base.Get(player) end
- for _,plot in ipairs(Base.Plots) do if not plot.Owner then
-  local ok,err=xpcall(function() Base.Rebuild(plot,1,player) end,debug.traceback)
+ local d=Data.Get(player)
+ local level=(d and d.BaseLevel) or 1
+ local function take(plot)
+  local ok,err=xpcall(function() Base.Rebuild(plot,level,player) end,debug.traceback)
   if not ok then warn("[IBW] Base.Claim failed for "..player.Name.." at part/line: "..tostring(err));return nil end
-  plot.Owner=player;return plot
- end end
+  plot.Owner=player
+  if d then d.BasePlot=plot.Index end
+  return plot
+ end
+ -- 1. The player's own persisted plot: the same base across rejoins.
+ if d and d.BasePlot and d.BasePlot>0 then
+  local own=Base.Plots[d.BasePlot]
+  if own and not own.Owner then return take(own) end
+ end
+ -- 2. First free plot.
+ for _,plot in ipairs(Base.Plots) do if not plot.Owner then return take(plot) end end
+ -- 3. No free plot: build one dynamically. Never share, never baseless.
+ local plot=Base.BuildPlot()
+ if plot then return take(plot) end
  warn("[IBW] Base.Claim found no available plot for "..player.Name)
+ return nil
 end
 function Base.Rebuild(plot,level,player)
  local m=plot.Model
