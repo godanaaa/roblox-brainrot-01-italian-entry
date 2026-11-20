@@ -52,6 +52,7 @@ local Leaderboard=safeRequire(Services.LeaderboardService,"LeaderboardService")
 local Vehicle=safeRequire(Services.VehicleService,"VehicleService")
 local Premium=safeRequire(Services.PremiumService,"PremiumService")
 local Admin=safeRequire(Services.AdminService,"AdminService")
+local ZoneBarriers=safeRequire(Services.ZoneBarrierService,"ZoneBarrierService")
 if Map then safeInit("Map.Build",function() Map.Build() end) end
 safeInit("Base.Init",function()
  Base.Init()
@@ -65,6 +66,7 @@ if Game and Remotes then safeInit("Game.Init",function() Game.Init(Remotes) end)
 if Vehicle and Remotes then safeInit("Vehicle.Init",function() Vehicle.Init(Remotes) end) end
 if Premium and Remotes then safeInit("Premium.Init",function() Premium.Init(Remotes) end) end
 if Admin and Remotes then safeInit("Admin.Init",function() Admin.Init(Remotes) end) end
+if ZoneBarriers and Remotes then safeInit("ZoneBarriers.Init",function() ZoneBarriers.Init(Remotes) end) end
 if Events and Remotes then safeInit("Events.Init",function() Events.Init(Remotes) end) end
 if Leaderboard then safeInit("Leaderboard.Init",function() Leaderboard.Init() end) end
 local function state(p) local d=Data.Get(p);if not d then return end;local income=0;local ownedIds={};for _,id in ipairs(d.Owned) do local e=Config.Catalogue[id];if e then income+=e.Income;ownedIds[id]=true end end;local discovered=0;for _ in pairs(ownedIds)do discovered+=1 end;local boost=d.GemUpgrades and d.GemUpgrades.DoubleIncome and 2 or 1;return {Cash=d.Cash,Gems=d.Gems,Level=d.Level,XP=d.XP,Rebirths=d.Rebirths,BaseLevel=d.BaseLevel,Owned=#d.Owned,DiscoveredCount=discovered,OwnedIds=ownedIds,Quests=d.Quests,TotalEarned=d.TotalEarned,Vehicles=d.Vehicles,GemUpgrades=d.GemUpgrades,UnlockedZones=d.UnlockedZones,Income=income*(1+d.Rebirths*.25)*boost} end
