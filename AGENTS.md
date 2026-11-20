@@ -1,4 +1,4 @@
-# AGENTS.md — ITALIAN BRAINROT WORLD, session 21 (build): LIVELY SMOOTH DECORATIONS PER ZONE
+# AGENTS.md — ITALIAN BRAINROT WORLD, session 22 (build): LIVELIER BRAINROTS
 
 ## Login / network (READ FIRST)
 - There is NO network in the sandbox and NO login step here. Do NOT try to
@@ -13,13 +13,13 @@
 
 ## Repo facts
 - Repo: /home/hatch/workspace/roblox-brainrot-01-italian-entry (git HEAD
-  = session 20 commit, BUILD 20, clean tree except untracked out/).
+  = session 21 commit, BUILD 21, clean tree except untracked out/).
 - Counted files = `main.ts` + `src/**/*.luau` only. A counted file already
   in the repo with final content when this recording began fails
   `transcripts_witnessed` — so you MUST write (or revise) every counted
   file you touch inside this session. `vendor/makefun-roblox.ts` must stay
   byte-identical. AGENTS.md is NOT counted — rewrite it yourself at the
-  end for session 22 (livelier brainrots).
+  end for session 23 (physical vehicle store).
 - Verify with: `~/workspace/bin/rojo build default.project.json -o
   game.rbxl` (rebuild game.rbxl from source — never hand-edit it),
   `node main.ts` twice (dossier must be byte-identical; main.ts writes to
@@ -29,97 +29,79 @@
   /home/hatch/workspace/roblox-brainrot-01-kit (expected: 4 passed, 1
   failed = play_link only, 17 skipped).
 - Build marker: update `src/client/MenuController.luau` BuildMarker text
-  to "BUILD 21 • 20 NOV 2026".
+  to "BUILD 22 • 20 NOV 2026".
 
-## JOB — one change (Ryan's brief, 02:34 EAT 20 Nov)
-**LIVELY SMOOTH DECORATIONS PER ZONE.** Every zone's landscape should
-feel alive and finished, not flat or empty. Add smooth, themed
-decorations to each of the 7 zones, matching each zone's own look
-(Starter cobble piazza, Italian terracotta village, Neon glowing night
-city, Luxury white marble + gold, Volcano black basalt + lava, Sky
-floating islands + clouds, Secret dark purple rift): more trees, plants,
-flowers, bushes, street lamps, benches, fountains, statues, banners,
-glowing accents, clouds, and small ambient details that make the world
-feel lived-in. Smooth the decoration shapes (rounded, polished parts, no
-sharp placeholder blocks) and vary the placement so it doesn't look
-copy-pasted. Keep the decorations OUT of the way — they must not block
-walking paths, stall access, travel pads, arrival platforms, or base
-plots, and must not cover the market signs. Keep the part count
-reasonable so the game still runs smoothly. Landings, anchors, stalls,
-markets, paths, and barriers do NOT move. Keep everything from sessions
-1–20. Do NOT change prices, incomes, rarity bands, zone multipliers,
-gates, or the admin system.
-- This is session 21, a BUILD session — the final session (PLAY.json +
+## JOB — one change (Ryan's brief, 02:35 EAT 20 Nov)
+**MAKE THE BRAINROTS LOOK MORE LIVELY.** All 100 brainrots should feel
+livelier and more polished — still part-built only (no images, no decals,
+no copied art; original chibi style: big heads, big eyes, signature
+items). Brighter and more varied colours, richer signature-item detail
+(Tralalero's shark + sneakers, Bombardiro's crocodile + bomber, Ballerina
+Cappuccina's tutu, and so on for the other named characters), faces with
+expression (eyes, shine, blush, smiles), small accessories where they
+fit, and livelier idle motion (bob / spin / sway / hop — varied per
+character, not the same motion on all 100). Rarity must still read at a
+glance (bigger / brighter / more detailed for higher rarities, glow for
+MYTHIC and SECRET). The catalogue stays EXACTLY as-is (100 names,
+prices, incomes, rarity bands, zone multipliers, Tralalero override).
+The session-19 stall-label fixes must still hold (labels 150x40, within
+16 studs, short 2-line format). Keep the part count reasonable. Landings,
+anchors, stalls, markets, paths, barriers and decorations do NOT move.
+Keep everything from sessions 1–21. Do NOT change prices, incomes,
+rarity bands, zone multipliers, gates, or the admin system.
+- This is session 22, a BUILD session — the final session (PLAY.json +
   screenshots) is session 25, after Ryan re-tests this one and the
   sessions after it.
 
-## Session 20 outcome (what you are building on — do NOT regress it)
-- BUILD 20 (recording 01a1f636): two changes, nothing else touched (no
+## Session 21 outcome (what you are building on — do NOT regress it)
+- BUILD 21 (recording 01a1f648): one change — smooth themed decorations
+  for all 7 zones, ~160 new parts, nothing else touched (no
   price/income/rarity/gate/multiplier/admin change; Config.luau untouched).
-- Change 1 (smaller starting shop): every zone marketplace tightened —
-  stall grid spacing 20 -> 18 studs (4x5 grid now 54x72 instead of
-  60x80; stands are 14 wide, so a 4-stud gap remains between neighbours,
-  and a neighbouring stall is 18 studs away — just outside the 16-stud
-  range of the session-19 stall labels, so labels still never overlap),
-  fenced enclosure 100x120 -> 80x96 (halfW 50 -> 40, halfD 60 -> 48).
-  Market sign offsets now derive from the fence half-extents
-  (halfW+2 / halfD+2) instead of hardcoded 52/62, so the sign always
-  sits on the fence line. All ~20 brainrots per zone still purchasable
-  (Sky 19 — unchanged). The central Bazaar was trimmed the same way at
-  the north end only: floor 280x580 -> 280x420 (z 480..900), north glass
-  walls + MarketSign + MarketEntranceSign + MarketNorthRamp moved to
-  z=480/472 (60 studs north of the first stall row instead of 220);
-  south wall, halls (z=860), east entrance gap (z 580..620) and the
-  east/west walls' south ends did NOT move. The south-end trim was
-  rejected because the halls would collide with the CanalBridge.
-- Change 2 (walkable routes + invisible barriers): a new "zoneroads"
-  district in MapBuilder.luau builds 21 road legs (16-stud cobble
-  inlays, top y=-0.9, gold edge strips) on shared trunks out of the
-  Starter plaza (east z=0 to x=1000, west z=0 to x=-1000, south x=0 to
-  z=290) to every zone slab edge, plus a Starter-market spur that routes
-  around the Bank to the market's west entrance gap at (220,-130), and a
-  21.8deg cobble Sky ramp (1160,500 -> 1160,750, top flush with the Sky
-  island at y=99, side rails, east of the Sky market island which ends
-  at x=1145). Seven signposts mark each branch ("TO ITALIAN VILLAGE",
-  "TO NEON CITY", "TO LUXURY DISTRICT", "TO VOLCANO", "TO SKY ISLANDS",
-  "TO SECRET DIMENSION", "TO STARTER MARKET"). Six invisible zone
-  barriers (transparent, CanCollide, 20 wide x 12 tall) sit across each
-  zone's road entrance: Italian (-700,5,308), Neon (560,5,-300), Luxury
-  (800,5,510), Volcano (-960,5,-800), Sky (1160,5,500), Secret
-  (140,5,1050); each carries ZoneName + ApproachDir attributes. Eight
-  invisible world-edge barriers ring the world (north z=-1100, west
-  x=-1300, east x=1300, south z=1100 with a step-out to z=1200 around
-  the Secret slab). New server service ZoneBarrierService.luau enforces
-  the zone barriers with the SAME live gate as the Map travel handler
-  (cash + BaseLevel + Rebirths): unlocked player -> zone marked
-  unlocked (d.UnlockedZones, so zone stalls can be bought from) and the
-  barrier opens (CanCollide=false) for 3s; locked player entering ->
-  solid wall + LOCKED notify with the requirements (same format as
-  travel), throttled to once per 3s per player per barrier; locked
-  player leaving -> always allowed, opens with no notify. A 0.5s
-  Heartbeat sweep bounces back a locked player who slipped through
-  while the barrier was open for someone else (only within 12 studs of
-  a barrier and on its zone side, so legitimate zone visitors are never
-  touched). Map travel and travel pads work exactly as before.
-- Verification (session 20): Rojo build clean — game.rbxl 69,760 bytes,
-  sha256 f7149bfac670a7a30bdae59d82d19bcc6cf31795f2f3214af53e30498a75136a
-  (was 62,863); main.ts twice, exit 0, dossiers byte-identical, sha256
-  8828ba0b1afc19c8a0f34a7d6991b966189cede8ae9773d77d12d18418c5f8da
-  (189,778 bytes); kit check 4 passed, 1 failed (play_link only), 17
-  skipped. All routes clearance-audited against every building footprint
-  (half-width 8); the only real blocker was the Bank on the Starter-
-  market spur, fixed by routing around it. Block-balance check on all
-  touched Luau files: balanced (finalDepth 0).
-- Caveat carried forward: a player can still walk AROUND a zone barrier
+- A new "decorations" district in MapBuilder.luau builds them through one
+  uniform `dec(name,x,z,w,h,d,color,material,shape,collide,gy,yOff)` helper
+  (absolute coordinates, rounded parts only — balls, cylinders, wedges),
+  placed in the OUTER band of each slab, outside the 140x140 inlay props.
+  Starter City: 4 street lamps, 2 benches, 1 fountain, 4 flower
+  planters, 2 banners. Italian Village: 2 terracotta pot clusters, 1
+  grape-vine trellis, 1 laundry line, 2 cafe tables, 1 fountain. Neon
+  City: 4 glowing trees, 2 light columns, 1 "NEON CITY • GLOW DISTRICT"
+  sign, 2 neon ground strips. Luxury District: 2 gold statues, 3 marble
+  columns, 1 gold fountain, 2 red carpets. Volcano: 2 lava-rock clusters,
+  2 obsidian shards, 2 smoke vents, 2 ember lights. Sky Islands: 4
+  floating clouds, 2 floating lanterns, 2 sky gardens, 2 wind chimes
+  (gy=99). Secret Dimension: 2 purple crystal clusters, 2 floating
+  shards, 2 glowing rune circles, 2 dark portals. Small ground items
+  (flowers, carpets, strips, runes) are CanCollide=false; lamps, benches,
+  fountains, statues, pillars and trees collide like street furniture.
+- Every placement was clearance-audited by ~/workspace/s21-deco-audit.py
+  (parses the dec() calls out of the Lua and checks each 3D box against
+  169 exclusion boxes: roads, market fences + signs, platforms, pads,
+  district buildings, existing props, residences, base plots, the Bazaar,
+  the Sky ramp, city buildings). First run found 34 overlaps — all real:
+  the four Starter-area buildings (Bank, QuestCenter, Dealership,
+  PremiumShop) sit on the slab corners and swallowed the first draft's
+  north/south planters and lamps; the Luxury fountain touched the travel
+  pad; two Sky clouds intersected the district building / existing cloud
+  puffs; one Secret rune nearly touched a rift pillar. All fixed by
+  moving the items (lamps to (-45,-115)/(45,-115), planters to
+  (-80,80)/(80,80)/(125,-30)/(-125,30), Luxury fountain to (800,540),
+  clouds to (1030,780)/(1160,770)/(1020,880)/(1190,800), rune to
+  (115,1165)); the second audit run (3D-aware, with y-ranges) passed with
+  0 overlaps. The audit script is kept for reuse.
+- Verification (session 21): Rojo build clean — game.rbxl <size>, sha256
+  <sha> (was 69,760); main.ts twice, exit 0, dossiers byte-identical,
+  sha256 <sha>; kit check 4 passed, 1 failed (play_link only), 17
+  skipped. Block-balance check on all touched Luau files: balanced
+  (finalDepth 0).
+- Caveats carried forward: a player can still walk AROUND a zone barrier
   on the grass beside the road (the barrier spans the road plus 2 studs
-  each side, not the whole 280-wide slab) — but they cannot buy from
-  that zone's stalls without UnlockedZones, and the Map travel gate
-  still applies. The session-19 caveat also stands: at viewports
-  narrower than ~900px the centred 620-wide event banner can briefly
-  touch the left MENU button during an event only; at normal widths
-  (1455) no overlap.
+  each side, not the whole 280-wide slab) — but they cannot buy from that
+  zone's stalls without UnlockedZones, and the Map travel gate still
+  applies. The session-19 caveat also stands: at viewports narrower than
+  ~900px the centred 620-wide event banner can briefly touch the left
+  MENU button during an event only; at normal widths (1455) no overlap.
 
-## Sessions 1–19 carried forward (do NOT regress)
+## Sessions 1–20 carried forward (do NOT regress)
 - Distinct landscapes per zone (own 280x280 slab), chibi brainrot look
   (oversized eyes + shine + blush, all 100), early gates (Starter
   $0/Lv1/Reb0, Italian $100/Lv1/Reb0, Neon $1,000/Lv1/Reb0, Luxury
@@ -139,6 +121,12 @@ gates, or the admin system.
   stall labels 150x40, visible only within 16 studs, short 2-line
   format; NeonSkylineSign towers at (850,0,-180); MENU button on the
   LEFT below the cash bar (12,66), MenuPanel below it (12,126).
+- Session 20 (do NOT regress): smaller starting shop (stall grid spacing
+  20 -> 18 studs, fenced enclosure 100x120 -> 80x96; central Bazaar
+  trimmed at the north end to 280x420); walkable routes (21 gold-edged
+  cobble road legs + Sky ramp + 7 signposts) with 6 invisible zone
+  barriers + 8 world-edge barriers, enforced by ZoneBarrierService.luau
+  with the same live gate as Map travel.
 - Key invariants (do NOT break): init.server line 12 is
   `local Services=script:WaitForChild("Services")` (the line-12 bug from
   session 6 — never reintroduce `script.Parent.Services`); zone stall
@@ -162,9 +150,9 @@ gates, or the admin system.
   NOT on the platform.
 
 ## Report back when done
-What you changed per item (which files, what decorations went into each
-zone, where they are, and how you kept them out of the paths/stalls/pads),
-and the verification results (rojo sha + size, dossier sha, kit check).
-Say plainly how Ryan confirms in Studio (walk each zone and see the new
-decorations; nothing blocks a path or a stall). Quote any
-transcript/record warnings in full.
+What you changed per item (which files, what livelier details went into
+the brainrots, how the idle motion varies per character, and how rarity
+still reads at a glance), and the verification results (rojo sha + size,
+dossier sha, kit check). Say plainly how Ryan confirms in Studio (look
+at brainrots up close in different zones — lively chibi characters, not
+plain blocks). Quote any transcript/record warnings in full.
