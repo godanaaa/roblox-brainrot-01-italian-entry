@@ -86,9 +86,22 @@ Remotes.Travel.OnServerInvoke=function(p,where)
   local character=p.Character
   if not character or not character.Parent then return travelFailure(p,"TRAVEL FAILED • Character is not ready yet. Try again.",where) end
   if where=="Home" then
+   -- Session 25: HOME goes to the player's OWN assigned base (the
+   -- persisted BasePlot from session 24). If the player somehow has no
+   -- plot yet, claim one first via the normal Claim path, then teleport
+   -- — a player is never left without a home. Landing: on the yard in
+   -- front of the house (the porch side, -Z; the fence gap is there too),
+   -- facing the house (+Z), so the player arrives looking at their own
+   -- base, not inside it (the old landing was the plot centre — inside
+   -- the house). Depth grows with BaseLevel (d=30*scale, front=-d/2),
+   -- so the landing sits 14 studs in front of the porch at every level.
    local plot=Base.Get(p)
+   if not plot then local ok,err=pcall(function() plot=Base.Claim(p) end);if not ok then warn("[IBW] Home Claim failed for "..p.Name..": "..tostring(err)) end end
    if not plot then return travelFailure(p,"HOME UNAVAILABLE • Your base is not ready yet.",where) end
-   character:PivotTo(CFrame.new(plot.Position+Vector3.new(0,8,0)));return true
+   local level=(d and d.BaseLevel) or 1
+   local depth=30*(1+(level-1)*0.16)
+   local landing=plot.Position+Vector3.new(0,3,-depth/2-14)
+   character:PivotTo(CFrame.new(landing,landing+Vector3.new(0,0,1)));return true
   end
   for _,zone in ipairs(Config.Zones) do
    if zone.Name==where then
